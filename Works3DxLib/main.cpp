@@ -38,16 +38,16 @@ public:
 	BOOL LOADING_IMAGE(const char* pathname)
 	{
 		strcpy(this->path, pathname);
-		handle = LoadGraph(this->path);			//読み込み
-		if (handle == -1)
+		this->handle = LoadGraph(this->path);			//読み込み
+		if (this->handle == -1)
 		{
 			//エラーメッセージ表示
 			MessageBox(GetMainWindowHandle(), pathname, "画像の読み込みに失敗しました", MB_OK);
 			return FALSE;
 		}
-		GetGraphSize(handle, &width, &height);	//画像の幅と高さを取得
-		x = GAME_WIDTH / 2 - width / 2;		//左右中央揃え
-		y = GAME_HEIGHT / 2 - height / 2;		//上下中央揃え
+		GetGraphSize(this->handle, &this->width, &this->height);	//画像の幅と高さを取得
+		this->x = GAME_WIDTH / 2 - this->width / 2;		//左右中央揃え
+		this->y = GAME_HEIGHT / 2 - this->height / 2;		//上下中央揃え
 		return TRUE;
 	}
 };
@@ -62,25 +62,47 @@ public:
 	int bold;					//太さ
 	int type;					//タイプ
 
-	BOOL CREATE_FONT(int fontsize)
+	BOOL CREATE_FONT(int fontsize,const char* fontpath,const char* fontname)
+		//フォントサイズ　フォントのパス　フォントの名前を引数に使用
 	{
-		strcpy_s(path, sizeof(path), FONT_TANU_PATH);	//パスをコピー
-		strcpy_s(name, sizeof(name), FONT_TANU_NAME);	//フォント名をコピー
-		handle = -1;								//ハンドルを初期化
-		size = fontsize;								//サイズを引数にする
-		bold = 1;								//太さ1
-		type = DX_FONTTYPE_ANTIALIASING_EDGE;	//アンチエイリアシング付きのフォント
+		strcpy_s(this->path, sizeof(this->path), fontpath);	//パスをコピー
+		strcpy_s(this->name, sizeof(this->name), fontname);	//フォント名をコピー
+		this->handle = -1;								//ハンドルを初期化
+		this->size = fontsize;								//サイズを引数にする
+		this->bold = 1;								//太さ1
+		this->type = DX_FONTTYPE_ANTIALIASING_EDGE;	//アンチエイリアシング付きのフォント
 
 		//フォントハンドル作成
-		handle = CreateFontToHandle(name, size, bold, type);
+		this->handle = CreateFontToHandle(this->name, this->size, this->bold, this->type);
 		//フォントハンドル作成できないとき、エラー
-		if (handle == -1) { MessageBox(GetMainWindowHandle(), FONT_TANU_NAME, FONT_CREATE_ERR_TITLE, MB_OK); return FALSE; }
+		if (this->handle == -1) { MessageBox(GetMainWindowHandle(), fontpath, FONT_CREATE_ERR_TITLE, MB_OK); return FALSE; }
 		return TRUE;
 	}
 
-	~CREATE_FONTHANDLE()
+	~CREATE_FONTHANDLE()//フォントハンドルを削除
 	{
-		DeleteFontToHandle(handle);
+		DeleteFontToHandle(this->handle);
+	}
+};
+
+class MUSIC
+{
+public:
+
+	char path[PATH_MAX];		//パス
+	int handle;
+
+	BOOL LOAD_MUSIC(const char* musicpath)
+	{
+		strcpy_s(path,musicpath);				//パスの設定
+		handle = LoadSoundMem(path);			//読み込み
+		if (handle == -1)
+		{
+			//エラーメッセージ表示
+			MessageBox(GetMainWindowHandle(), musicpath, "音楽の読み込みに失敗しました", MB_OK);
+			return FALSE;
+		}
+		return TRUE;
 	}
 };
 
@@ -103,7 +125,7 @@ private:
 public:
 	int HP,MP,STR,AT,AVG,Lv,EXP;
 	int EXPMAX;
-	void INPUT_STATES()
+	void INPUT_STATES()//ファイルからステータスのロード
 	{
 		int ret;
 		FILE* fp = fopen(PLAYER_STATES, "r");
@@ -112,7 +134,7 @@ public:
 		return;
 	}
 
-	void SAVE_STATES()
+	void SAVE_STATES()//ステータスのセーブ
 	{
 		int ret;
 		FILE* fp = fopen(PLAYER_STATES, "w");
@@ -121,7 +143,7 @@ public:
 		return;
 	}
 
-	void LEVELUP()
+	void LEVELUP()//レベルアップ関数（途中）
 	{
 		SRand(1);
 		int randam = Lv / 10+2;
@@ -191,7 +213,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//	//エラーメッセージ表示
 	//	MessageBox(GetMainWindowHandle(), GOAL_ERR_CAPTION, GOAL_ERR_TITLE, MB_OK);	return -1;
 	//}
-	tanu20.CREATE_FONT(20);
+	tanu20.CREATE_FONT(20,FONT_TANU_PATH,FONT_TANU_NAME);
 	//無限ループ
 	while (TRUE)
 	{
