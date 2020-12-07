@@ -1,13 +1,11 @@
 #include "DxLib.h"
 #include "windowsystem.h"
 #include "image.hpp"
+#include "font.hpp"
+#include "map.hpp"
 #include <iostream>
 #include <string>
 using namespace std;
-#define FONT_TANU_PATH			TEXT(".\\FONT\\TanukiMagic.ttf")	//フォントの場所
-#define FONT_TANU_NAME			TEXT("たぬき油性マジック")			//フォントの名前
-#define FONT_INSTALL_ERR_TITLE	TEXT("フォントインストールエラー")
-#define FONT_CREATE_ERR_TITLE	TEXT("フォント作成エラー")
 
 #define PLAYER_STATES TEXT(".\\STATES\\PlayerStates.csv")
 
@@ -23,88 +21,7 @@ enum GAME_SCENE	//ゲームシーンの列挙
 	GAME_END_SCENE
 };
 
-class LOAD_SINGLE_IMAGE //画像一枚を読み込むクラス
-{
-public:
-	char path[PATH_MAX];		//パス
-	char pathname[PATH_MAX];
-	int handle;					//ハンドル
-	int x;						//X位置
-	int y;						//Y位置
-	int width;					//幅
-	int height;					//高さ
-	BOOL IsDraw;				//表示の可否
 
-	BOOL LOADING_IMAGE(const char* pathname)
-	{
-		strcpy(this->path, pathname);
-		this->handle = LoadGraph(this->path);			//読み込み
-		if (this->handle == -1)
-		{
-			//エラーメッセージ表示
-			MessageBox(GetMainWindowHandle(), pathname, "画像の読み込みに失敗しました", MB_OK);
-			return FALSE;
-		}
-		GetGraphSize(this->handle, &this->width, &this->height);	//画像の幅と高さを取得
-		this->x = GAME_WIDTH / 2 - this->width / 2;		//左右中央揃え
-		this->y = GAME_HEIGHT / 2 - this->height / 2;		//上下中央揃え
-		return TRUE;
-	}
-};
-
-class CREATE_FONTHANDLE
-{
-public:
-	char path[PATH_MAX];		//パス
-	char name[NAME_MAX];		//フォント名
-	int handle;					//ハンドル
-	int size;					//大きさ
-	int bold;					//太さ
-	int type;					//タイプ
-
-	BOOL CREATE_FONT(int fontsize,const char* fontpath,const char* fontname)
-		//フォントサイズ　フォントのパス　フォントの名前を引数に使用
-	{
-		strcpy_s(this->path, sizeof(this->path), fontpath);	//パスをコピー
-		strcpy_s(this->name, sizeof(this->name), fontname);	//フォント名をコピー
-		this->handle = -1;								//ハンドルを初期化
-		this->size = fontsize;								//サイズを引数にする
-		this->bold = 1;								//太さ1
-		this->type = DX_FONTTYPE_ANTIALIASING_EDGE;	//アンチエイリアシング付きのフォント
-
-		//フォントハンドル作成
-		this->handle = CreateFontToHandle(this->name, this->size, this->bold, this->type);
-		//フォントハンドル作成できないとき、エラー
-		if (this->handle == -1) { MessageBox(GetMainWindowHandle(), fontpath, FONT_CREATE_ERR_TITLE, MB_OK); return FALSE; }
-		return TRUE;
-	}
-
-	~CREATE_FONTHANDLE()//フォントハンドルを削除
-	{
-		DeleteFontToHandle(this->handle);
-	}
-};
-
-class MUSIC
-{
-public:
-
-	char path[PATH_MAX];		//パス
-	int handle;
-
-	BOOL LOAD_MUSIC(const char* musicpath)
-	{
-		strcpy_s(path,musicpath);				//パスの設定
-		handle = LoadSoundMem(path);			//読み込み
-		if (handle == -1)
-		{
-			//エラーメッセージ表示
-			MessageBox(GetMainWindowHandle(), musicpath, "音楽の読み込みに失敗しました", MB_OK);
-			return FALSE;
-		}
-		return TRUE;
-	}
-};
 
 class PlayerStates
 {
@@ -136,7 +53,6 @@ public:
 
 	void SAVE_STATES()//ステータスのセーブ
 	{
-		int ret;
 		FILE* fp = fopen(PLAYER_STATES, "w");
 		fprintf(fp, "%d,%d,%d,%d,%d,%d,", HP, MP, STR, Lv, EXP, EXPMAX);
 		fclose(fp);
@@ -178,6 +94,10 @@ LOAD_SINGLE_IMAGE title;
 LOAD_SINGLE_IMAGE player;
 LOAD_SINGLE_IMAGE enemy;
 CREATE_FONTHANDLE tanu20;
+MAP_DIV divmap;
+MAPINPUT_UNDER MAPUND;
+MAPINPUT_UNDER MAPMID;
+MAPINPUT_UNDER MAPON;
 int GameScene;//ゲームシーンを管理する
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -196,10 +116,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return -1; }
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
 
-	GameScene = GAME_BATTLE_SCENE;	//ゲームシーンはスタート画面から
+	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
-
+	divmap.DIV_MAP();
+	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);
+	MAPUND.MAPSETTING(divmap.width, divmap.height);
+	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);
+	MAPMID.MAPSETTING(divmap.width, divmap.height);
+	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);
+	MAPON.MAPSETTING(divmap.width, divmap.height);
 	//スタートが決まっていなければ
 	//if (startPt.x == -1 && startPt.y == -1)
 	//{
@@ -295,10 +221,47 @@ VOID MY_PLAY()
 
 VOID MY_PLAY_PROC()
 {
+
 	return;
 }
 VOID MY_PLAY_DRAW()
 {
+	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	{
+		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		{
+			//マップを描画
+			DrawGraph(
+				MAPUND.x[tate][yoko],
+				MAPUND.y[tate][yoko],
+				divmap.handle[MAPUND.kind[tate][yoko]],
+				TRUE);
+		}
+	}
+	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	{
+		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		{
+			//マップを描画
+			DrawGraph(
+				MAPMID.x[tate][yoko],
+				MAPMID.y[tate][yoko],
+				divmap.handle[MAPMID.kind[tate][yoko]],
+				TRUE);
+		}
+	}
+	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	{
+		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		{
+			//マップを描画
+			DrawGraph(
+				MAPON.x[tate][yoko],
+				MAPON.y[tate][yoko],
+				divmap.handle[MAPON.kind[tate][yoko]],
+				TRUE);
+		}
+	}
 	return;
 }
 

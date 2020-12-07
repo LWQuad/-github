@@ -151,12 +151,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="font.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="map.cpp" />
+    <ClCompile Include="music.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="image.h" />
+    <ClInclude Include="font.hpp" />
     <ClInclude Include="image.hpp" />
+    <ClInclude Include="map.hpp" />
+    <ClInclude Include="music.hpp" />
     <ClInclude Include="windowsystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

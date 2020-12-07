@@ -1,2 +1,4 @@
 C:\Users\g19012\source\repos\Works3DxLib\Debug\Works3DxLib.exe
 C:\Users\g19012\source\repos\Works3DxLib\Debug\Works3DxLib.pdb
+C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe
+C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.pdb
