@@ -12,6 +12,7 @@
 #define GAME_MAP1_UNDER_TXT TEXT(".\\MAP\\map1_マップ下.txt")
 #define GAME_MAP1_MIDDLE_TXT TEXT(".\\MAP\\map1_マップ中.txt")
 #define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.txt")
+#define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.txt")
 
 #define MAP_DIV_WIDTH		32	//画像を分割する幅サイズ
 #define MAP_DIV_HEIGHT		32	//画像を分割する高さサイズ
@@ -33,7 +34,7 @@ public:
 	BOOL DIV_MAP();
 };
 
-class MAPINPUT_UNDER //マップを読み込むクラス
+class MAPINPUT //マップを読み込むクラス
 {
 public:
 	int kind[MAP_TATE_MAX1][MAP_YOKO_MAX1];				//マップの種類
@@ -44,7 +45,11 @@ public:
 	int mapF[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
 	int map[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
 	BOOL LOADING_MAP(const char*);
+	BOOL isVIEW;//表示できるかを示す
     void MAPSETTING(int,int);
 
 };
+
+
+
 

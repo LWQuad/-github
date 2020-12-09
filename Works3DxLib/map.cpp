@@ -1,7 +1,7 @@
 #include "DxLib.h"
 #include "map.hpp"
 
-BOOL MAPINPUT_UNDER::LOADING_MAP(const char* maptxt)//マップデータを読み込む関数(マップファイルパス)
+BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//マップデータを読み込む関数(マップファイルパス)
 {
 	ifstream ifs(maptxt);
 	string str;
@@ -15,7 +15,8 @@ BOOL MAPINPUT_UNDER::LOADING_MAP(const char* maptxt)//マップデータを読み込む関数
 	return TRUE;
 }
 
-VOID MAPINPUT_UNDER::MAPSETTING(int chipwidth, int chipheight)
+VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
+//マップデータの座標を設定する関数(マップチップの幅、マップチップの高さ)
 {
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 	{
@@ -32,12 +33,16 @@ VOID MAPINPUT_UNDER::MAPSETTING(int chipwidth, int chipheight)
 			this->height[tate][yoko] = chipheight;
 
 			//マップの座標を設定
-			this->x[tate][yoko] = yoko * this->width[tate][yoko];
-			this->y[tate][yoko] = tate * this->height[tate][yoko];
+			this->x[tate][yoko] =(yoko * this->width[tate][yoko]);
+			this->y[tate][yoko] =(tate * this->height[tate][yoko]);
+			this->x[tate][yoko] -= 15 * chipwidth;
+			this->y[tate][yoko] -= 20 * chipheight;
+			this->isVIEW = FALSE;
 		}
 	}
 	return;
 }
+
 
 
 BOOL MAP_DIV::DIV_MAP() {

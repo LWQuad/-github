@@ -159,9 +159,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="font.hpp" />
+    <ClInclude Include="hitbox.hpp" />
     <ClInclude Include="image.hpp" />
     <ClInclude Include="map.hpp" />
     <ClInclude Include="music.hpp" />
+    <ClInclude Include="player.hpp" />
     <ClInclude Include="windowsystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
