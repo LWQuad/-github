@@ -12,6 +12,7 @@ BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ð“Ç‚Ýž‚ÞŠÖ”(ƒ}ƒbƒ
 		yoko++;
 		if (yoko > MAP_YOKO_MAX1 - 1) { yoko = 0; tate++; }
 	}
+	ifs.close();
 	return TRUE;
 }
 

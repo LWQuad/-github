@@ -5,12 +5,15 @@
 #include "map.hpp"
 #include "player.hpp"
 #include "hitbox.hpp"
+#include "battleUI.hpp"
+#include "enemystatas.hpp"
+#include "playerstatas.hpp"
 #include <iostream>
 #include <string>
 using namespace std;
 
-#define PLAYER_STATES TEXT(".\\STATES\\PlayerStates.csv")
-
+#define MOVE_MAP_UP 5
+#define MOVE_MAP_LEFT 5
 #define MOUSE_R_CLICK_TITLE		TEXT("ゲーム中断")
 #define MOUSE_R_CLICK_CAPTION	TEXT("ゲームを中断し、タイトル画面に戻りますか？")
 
@@ -23,51 +26,9 @@ enum GAME_SCENE	//ゲームシーンの列挙
 	GAME_END_SCENE
 };
 
-
-
-class PlayerStates
+class HPbar
 {
-private:
-	int fHP = 25;
-	int fMP = 20;
-	int fSTR = 16;
-	int fAT = 0;
-	int fAVI = 25;
-	int fLv = 1;
-	int fEXP = 0;
-
-	//statesUpの基礎値
-	int uHP = 8;
-	int uMP = 2;
-	int uSTR = 5;
-	int uAVI = 6;
-public:
-	int HP,MP,STR,AT,AVG,Lv,EXP;
-	int EXPMAX;
-	void INPUT_STATES()//ファイルからステータスのロード
-	{
-		int ret;
-		FILE* fp = fopen(PLAYER_STATES, "r");
-		while (ret = fscanf(fp, "%d,%d,%d,%d,%d,%d,", &HP, &MP, &STR, &Lv, &EXP, &EXPMAX) != EOF) {};
-		fclose(fp);
-		return;
-	}
-
-	void SAVE_STATES()//ステータスのセーブ
-	{
-		FILE* fp = fopen(PLAYER_STATES, "w");
-		fprintf(fp, "%d,%d,%d,%d,%d,%d,", HP, MP, STR, Lv, EXP, EXPMAX);
-		fclose(fp);
-		return;
-	}
-
-	void LEVELUP()//レベルアップ関数（途中）
-	{
-		SRand(1);
-		int randam = Lv / 10+2;
-		HP += uHP*Lv/10+GetRand(randam);
-		return;
-	}
+	int HPwidth = 100;
 };
 
 PlayerStates Pstates;
@@ -95,14 +56,24 @@ VOID MY_EVENT_DRAW(VOID);		//イベント画面の描画
 LOAD_SINGLE_IMAGE title;
 LOAD_SINGLE_IMAGE Bplayer;
 LOAD_SINGLE_IMAGE enemy;
+LOAD_SINGLE_IMAGE btbk;
+LOAD_SINGLE_IMAGE UIback;
+LOAD_SINGLE_IMAGE kougekiUI;
+LOAD_SINGLE_IMAGE skillUI;
 CREATE_FONTHANDLE tanu20;
+CREATE_FONTHANDLE tanu30;
 MAP_DIV divmap;
 MAPINPUT MAPUND;
 MAPINPUT MAPMID;
 MAPINPUT MAPON;
 MAP_HITBOX MAPHIT;
+MAP_ENEMY MAPEN;
+ENEMY Senemy;
 CHARA player;
+
+BATTLE_UI UI;
 int GameScene;//ゲームシーンを管理する
+int MoveMap = 0;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -117,34 +88,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if (title.LOADING_IMAGE(IMAGE_TITLE) == -1) { return -1; }
 	if (Bplayer.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }
-	if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }
+	/*if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }*/
+	if (player.image.LOADING_DIV_IMAGE(IMAGE_PLAYER_INMAP) == -1) { return -1; }
 	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return -1; }
+	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return -1; }
+	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return -1; }
+	if (kougekiUI.LOADING_IMAGE(IMAGE_UI_KOUGEKI) == -1) { return -1; }
+	if (skillUI.LOADING_IMAGE(IMAGE_UI_SKILL) == -1) { return -1; }
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
 
 	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
 	divmap.DIV_MAP();
-	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);
+	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
 	MAPUND.MAPSETTING(divmap.width, divmap.height);
-	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);
+	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
 	MAPMID.MAPSETTING(divmap.width, divmap.height);
-	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);
+	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);//上のマップ
 	MAPON.MAPSETTING(divmap.width, divmap.height);
-	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);
+	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);//当たり判定のマップ
 	MAPHIT.MAPSETTING(divmap.width, divmap.height);
 	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height);
+	MAPEN.LOADING_MAP(GAME_MAP1_ENEMYMAP);//敵の出現マップ
+	MAPEN.MAPSETTING(divmap.width, divmap.height);
+	MAPEN.SETTING_HITBOX(divmap.width, divmap.height);
 
 	//start位置の設定
 	player.image.x = divmap.width*10; player.image.y =divmap.height*11 ;
-	player.image.IsDraw = TRUE;
+	player.Nowhandle = player.image.handle[0];
+	/*player.image.IsDraw = TRUE;*/
 	//スタートが決まっていなければ
 	//if (startPt.x == -1 && startPt.y == -1)
 	//{
 	//	//エラーメッセージ表示
 	//	MessageBox(GetMainWindowHandle(), START_ERR_CAPTION, START_ERR_TITLE, MB_OK);	return -1;
 	//}
-
+	Pstates.INPUT_STATES(PLAYER_STATES);
 	////ゴールが決まっていなければ
 	//if (GoalRect.left == -1)
 	//{
@@ -152,6 +132,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//	MessageBox(GetMainWindowHandle(), GOAL_ERR_CAPTION, GOAL_ERR_TITLE, MB_OK);	return -1;
 	//}
 	tanu20.CREATE_FONT(20,FONT_TANU_PATH,FONT_TANU_NAME);
+	tanu30.CREATE_FONT(30, FONT_TANU_PATH, FONT_TANU_NAME);
 	//無限ループ
 	while (TRUE)
 	{
@@ -186,8 +167,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		//DrawGraph(title.x, title.y, title.handle, TRUE);
 		//MY_FPS_DRAW();		//FPSの処理[描画]
-		Pstates.INPUT_STATES();
-		Pstates.SAVE_STATES();
+		
+
 
 		ScreenFlip();		//モニタのリフレッシュレートの速さで裏画面を再描画
 
@@ -245,8 +226,15 @@ VOID MY_PLAY_PROC()
 	player.OldY = player.image.y;
 	if (CheckHitKey(KEY_INPUT_UP) == TRUE)
 	{
-		if (MAPON.y[0][0] < 0 && player.image.y<100)
+		player.Nowhandle = player.image.handle[10];
+		player.coll.top -= 5;
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
+		else{ player.image.y -= 5; }
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		{GameScene = GAME_BATTLE_SCENE;}
+		if (MAPON.y[0][0] < 0 && player.image.y < 100)
 		{
+			player.image.y = player.OldY;
 			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 			{
 				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -261,13 +249,24 @@ VOID MY_PLAY_PROC()
 				}
 			}
 		}
-		else { player.image.y -= 5; }
-		/*player.CenterY -= 5;*/
 	}
 	if (CheckHitKey(KEY_INPUT_LEFT) == TRUE )
 	{
-		if (MAPON.x[0][0] < 0 && player.image.x<150)
+		/*player.image.x -= 5;*/
+		player.Nowhandle = player.image.handle[4];
+		player.coll.left -= 5;
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{}
+		else {
+			player.image.x -= 5;
+		}
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
 		{
+			GameScene = GAME_BATTLE_SCENE;
+		}
+		if (MAPON.x[0][0] < 0 && player.image.x < 150)
+		{
+			player.image.x = player.OldX;
 			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 			{
 				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -282,13 +281,21 @@ VOID MY_PLAY_PROC()
 				}
 			}
 		}
-		else { player.image.x -= 5; }
-		/*player.CenterX -= 5;*/
 	}
 	if (CheckHitKey(KEY_INPUT_DOWN) == TRUE)
 	{
+		player.Nowhandle = player.image.handle[1];
+		player.coll.bottom += 5;
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		{}
+		else { player.image.y += 5; }
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		{
+			GameScene = GAME_BATTLE_SCENE;
+		}
 		if (MAPON.y[MAP_TATE_MAX1 - 1][0] > GAME_HEIGHT && player.image.y > 500)
 		{
+			player.image.y = player.OldY;
 			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 			{
 				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -303,13 +310,21 @@ VOID MY_PLAY_PROC()
 				}
 			}
 		}
-		else{player.image.y += 5;}
-		/*player.CenterY += 5;*/
+
 	}
 	if (CheckHitKey(KEY_INPUT_RIGHT) == TRUE)
 	{
-		if (MAPON.x[0][MAP_YOKO_MAX1 - 1] > GAME_WIDTH&&player.image.x>650)
+		player.Nowhandle = player.image.handle[7];
+		player.coll.right += 5;
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
+		else { player.image.x += 5; }
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
 		{
+			GameScene = GAME_BATTLE_SCENE;
+		}
+		if (MAPON.x[0][MAP_YOKO_MAX1 - 1] > GAME_WIDTH && player.image.x > 650)
+		{
+			player.image.x = player.OldX;
 			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 			{
 				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -324,17 +339,25 @@ VOID MY_PLAY_PROC()
 				}
 			}
 		}
-		else { player.image.x += 5; }
 	}
-	player.coll.left = player.image.x + 5;
-	player.coll.top = player.image.y + 5;
-	player.coll.right = player.image.x + player.image.width - 5;
-	player.coll.bottom = player.image.y + player.image.height - 5;
-	if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	{
-		player.image.x = player.OldX;
-		player.image.y = player.OldY;
-	}
+	if (player.image.x < 0) { player.image.x = 0; }
+	if (player.image.x > GAME_WIDTH-divmap.width) { player.image.x = GAME_WIDTH - divmap.width; }
+	if (player.image.y < 0) { player.image.y = 0; }
+	if (player.image.y > GAME_HEIGHT - divmap.height) { player.image.y = GAME_HEIGHT - divmap.height; }
+	//player.coll.left = player.image.x + 5;
+	//player.coll.top = player.image.y + 5;
+	//player.coll.right = player.image.x + player.image.width - 5;
+	//player.coll.bottom = player.image.y + player.image.height - 5;
+	//if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+	//{
+	//	player.image.x = player.OldX;
+	//	player.image.y = player.OldY;
+	//}
+
+
+
+
+
 	return;
 }
 VOID MY_PLAY_DRAW()
@@ -361,10 +384,10 @@ VOID MY_PLAY_DRAW()
 
 		}
 	}
-	if (player.image.IsDraw == TRUE)
-	{
-		DrawGraph(player.image.x, player.image.y, player.image.handle, TRUE);
-	}//プレイヤーの描画
+	//if (player.image.IsDraw == TRUE)
+	//{
+		DrawGraph(player.image.x, player.image.y, player.Nowhandle, TRUE);
+/*	}*///プレイヤーの描画
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)//プレイヤーより上のマップ描画
 	{
 		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -375,14 +398,14 @@ VOID MY_PLAY_DRAW()
 				divmap.handle[MAPON.kind[tate][yoko]],
 				TRUE);
 		}
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
-		{
-			DrawGraph(
-				MAPHIT.x[tate][yoko],
-				MAPHIT.y[tate][yoko],
-				divmap.handle[MAPHIT.kind[tate][yoko]],
-				TRUE);
-		}
+		//for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		//{
+		//	DrawGraph(
+		//		MAPHIT.x[tate][yoko],
+		//		MAPHIT.y[tate][yoko],
+		//		divmap.handle[MAPHIT.kind[tate][yoko]],
+		//		TRUE);
+		//}
 	}
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 {
@@ -395,11 +418,6 @@ VOID MY_PLAY_DRAW()
 				MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
 		}
 
-		////通路ならば
-		//if (mapData[tate][yoko] == t)
-		//{
-		//	DrawBox(mapColl[tate][yoko].left, mapColl[tate][yoko].top, mapColl[tate][yoko].right, mapColl[tate][yoko].bottom, GetColor(255, 255, 0), FALSE);
-		//}
 	}
 }
 	DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
@@ -431,14 +449,52 @@ VOID MY_BATTLE()
 
 VOID MY_BATTLE_PROC()
 {
+	UI.CHANGE_COUNT();
+	if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)
+	{
+		UI.count = 0;
+		UI.UItag -= 1;
+		if (UI.UItag < 0) { UI.UItag = 4; }
+	}
+	if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)
+	{
+		UI.count = 0;
+		UI.UItag += 1;
+		if (UI.UItag > 4) { UI.UItag = 0; }
+	}
+
+	if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 0)//攻撃選択時
+	{
+
+	}
 	return;
 }
 
 VOID MY_BATTLE_DRAW()
 {
+	DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);
 	DrawGraph(enemy.x, enemy.y, enemy.handle, TRUE);
+	DrawGraph(200, 370, Bplayer.handle, TRUE);
 	/*DrawGraph(player.x, player.y, player.handle, TRUE);*/
-	DrawStringToHandle(0, 0, "HP", GetColor(255, 255, 255), tanu20.handle);
+	/*DrawBox(20, GAME_HEIGHT - 220, 220, GAME_HEIGHT-55, GetColor(255, 255, 0), TRUE);*/
+	DrawGraph(20, 330, UIback.handle, TRUE);
+	/*DrawStringToHandle(30, 400, "〇攻撃", GetColor(255, 255, 255), tanu30.handle);*/
+	DrawGraph(30, 340, kougekiUI.handle, TRUE);
+	DrawGraph(30, 380, kougekiUI.handle, TRUE);
+	DrawGraph(30, 420, kougekiUI.handle, TRUE);
+	DrawGraph(30, 460, kougekiUI.handle, TRUE);
+	DrawGraph(30, 500, kougekiUI.handle, TRUE);
+	/*DrawStringToHandle(30, 460, "〇防御", GetColor(255, 255, 255), tanu30.handle);
+	DrawStringToHandle(30, 490, "〇アイテム", GetColor(255, 255, 255), tanu30.handle);
+	DrawStringToHandle(30, 520, "〇にげる", GetColor(255, 255, 255), tanu30.handle);*/
+	DrawBox(0, GAME_HEIGHT - 40, GAME_WIDTH, GAME_HEIGHT, GetColor(125, 125, 0), TRUE);
+	DrawBox(350-2, 400-2, 350 + 100+2, 420+2, GetColor(255, 255, 255), TRUE);
+	float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
+	float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
+	DrawBox(350, 400,350+(int)a, 420, GetColor(0, 255, 0), TRUE);
+	DrawStringToHandle(320, GAME_HEIGHT-30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle);
+	DrawFormatStringToHandle(350, 400
+		, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.HP, Pstates.HPMAX);
 	return;
 }
 

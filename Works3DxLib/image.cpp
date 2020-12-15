@@ -19,4 +19,22 @@ BOOL LOAD_SINGLE_IMAGE::LOADING_IMAGE(const char* pathname)
 	return TRUE;
 }
 
+BOOL LOAD_DIV_IMAGE::LOADING_DIV_IMAGE(const char* divimagepath)
+{
+	int mapRes = LoadDivGraph(
+		divimagepath,										//マップのパス
+		DIV_CHARA, DIV_CHARA_TATE, DIV_CHARA_YOKO,			//マップを分割する数
+		MAP_DIV_WIDTH, MAP_DIV_HEIGHT,						//画像を分割するの幅と高さ
+		&this->handle[0]);								//分割した画像が入るハンドル
+
+	if (mapRes == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
+		return FALSE;
+	}
+	//幅と高さを取得
+	GetGraphSize(this->handle[0], &this->width, &this->height);
+	return TRUE;
+}
 

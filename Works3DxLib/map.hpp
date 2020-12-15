@@ -13,6 +13,8 @@
 #define GAME_MAP1_MIDDLE_TXT TEXT(".\\MAP\\map1_マップ中.txt")
 #define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.txt")
 #define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.txt")
+#define GAME_MAP1_ENEMYMAP TEXT(".\\MAP\\map1_敵の出現マップ.txt")
+
 
 #define MAP_DIV_WIDTH		32	//画像を分割する幅サイズ
 #define MAP_DIV_HEIGHT		32	//画像を分割する高さサイズ
@@ -44,9 +46,9 @@ public:
 	int y[MAP_TATE_MAX1][MAP_YOKO_MAX1];
 	int mapF[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
 	int map[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
-	BOOL LOADING_MAP(const char*);
+	BOOL LOADING_MAP(const char*);//マップを読み込む（マップのパス）
 	BOOL isVIEW;//表示できるかを示す
-    void MAPSETTING(int,int);
+    void MAPSETTING(int,int);//マップの座標を初期セットする（マップチップの幅、高さ）
 
 };
 
