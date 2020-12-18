@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include "DxLib.h"
+#include "image.hpp"
 
 class BATTLE_UI
 {
@@ -11,9 +12,14 @@ private:
 	int ITEM = 3;
 	int RUN = 4;//€–ÚˆÚ“®‚·‚éƒ^ƒO
 	int countMAX = 20;
+
 public:
+	int SpotUIx = 15;
+	int NonSpotUIx = 30;
+	LOAD_SINGLE_IMAGE image;
 	int count = 0;
 	int UItag = 0;//UI‚Ì€–Ú‚ğŠÇ—‚·‚é
+	int UIx[5] = { 30,30,30,30,30 };
 	BOOL CHANGE_COUNT();
 };
 

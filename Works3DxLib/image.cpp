@@ -19,22 +19,42 @@ BOOL LOAD_SINGLE_IMAGE::LOADING_IMAGE(const char* pathname)
 	return TRUE;
 }
 
-BOOL LOAD_DIV_IMAGE::LOADING_DIV_IMAGE(const char* divimagepath)
+BOOL LOAD_SINGLE_IMAGE::LOADING_IMAGE(const char* pathname,int handleNum)
 {
-	int mapRes = LoadDivGraph(
-		divimagepath,										//マップのパス
-		DIV_CHARA, DIV_CHARA_TATE, DIV_CHARA_YOKO,			//マップを分割する数
-		MAP_DIV_WIDTH, MAP_DIV_HEIGHT,						//画像を分割するの幅と高さ
-		&this->handle[0]);								//分割した画像が入るハンドル
-
-	if (mapRes == -1)
+	strcpy(this->path, pathname);
+	this->UIhandle[handleNum] = LoadGraph(this->path);			//読み込み
+	if (this->UIhandle[handleNum] == -1)
 	{
 		//エラーメッセージ表示
-		MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
+		MessageBox(GetMainWindowHandle(), pathname, "画像の読み込みに失敗しました", MB_OK);
 		return FALSE;
 	}
+	GetGraphSize(this->UIhandle[handleNum], &this->width, &this->height);	//画像の幅と高さを取得
+	handle = LoadGraph(this->path);
+	GetGraphSize(UIhandle[handleNum], &this->width, &this->height);
+	this->x = GAME_WIDTH / 2 - this->width / 2;		//左右中央揃え
+	this->y = GAME_HEIGHT / 2 - this->height / 2;		//上下中央揃え
+	return TRUE;
+}
+
+BOOL LOAD_DIV_IMAGE::LOADING_DIV_IMAGE(int divtate,int divyoko,int divwidth,int divheight,
+const char* divimagepath)
+{
+	int divmax = divtate * divyoko;
+	this->Divhandle.resize(divmax);//分割数に合わせてハンドル数を増やす
+	int mapRes = LoadDivGraph(
+		divimagepath,										//マップのパス
+		divmax, divtate, divyoko,			//マップを分割する数
+		divwidth, divheight,						//画像を分割する幅と高さ
+		&this->Divhandle[0]);								//分割した画像が入るハンドル
+	//if (mapRes == -1)
+	//{
+	//	//エラーメッセージ表示
+	//	MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
+	//	return FALSE;
+	//}
 	//幅と高さを取得
-	GetGraphSize(this->handle[0], &this->width, &this->height);
+	GetGraphSize(this->Divhandle[0], &this->width, &this->height);
 	return TRUE;
 }
 

@@ -3,9 +3,9 @@
 #include "DxLib.h"
 #include "playerstatas.hpp"
 
-class ENEMY :public PlayerStates
+class EnemyStates :public PlayerStates
 {
 public:
-	int enemy_tag;
+	int enemy_tag[10];
 };
 

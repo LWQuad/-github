@@ -1,7 +1,6 @@
-﻿  hitbox.cpp
-  main.cpp
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(41,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(42,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(49,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  コードを生成中...
+﻿  main.cpp
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(43,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(44,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(51,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\Battlesystem.hpp(15,5): warning C4552: '-': 式の結果が使用されていません
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe

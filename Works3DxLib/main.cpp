@@ -8,8 +8,12 @@
 #include "battleUI.hpp"
 #include "enemystatas.hpp"
 #include "playerstatas.hpp"
+#include "Battlesystem.hpp"
+#include "BATTLEEFFECT.hpp"
 #include <iostream>
 #include <string>
+#include <vector>
+
 using namespace std;
 
 #define MOVE_MAP_UP 5
@@ -31,8 +35,6 @@ class HPbar
 	int HPwidth = 100;
 };
 
-PlayerStates Pstates;
-
 VOID MY_START(VOID);		//スタート画面
 VOID MY_START_PROC(VOID);	//スタート画面の処理
 VOID MY_START_DRAW(VOID);	//スタート画面の描画
@@ -53,27 +55,33 @@ VOID MY_EVENT(VOID);			//イベント画面
 VOID MY_EVENT_PROC(VOID);		//イベント画面の処理
 VOID MY_EVENT_DRAW(VOID);		//イベント画面の描画
 
+PlayerStates Pstates;
+EnemyStates Estates[10];
 LOAD_SINGLE_IMAGE title;
 LOAD_SINGLE_IMAGE Bplayer;
 LOAD_SINGLE_IMAGE enemy;
 LOAD_SINGLE_IMAGE btbk;
 LOAD_SINGLE_IMAGE UIback;
-LOAD_SINGLE_IMAGE kougekiUI;
-LOAD_SINGLE_IMAGE skillUI;
+BATTLE_EFFECT BEffectNormal;
 CREATE_FONTHANDLE tanu20;
 CREATE_FONTHANDLE tanu30;
-MAP_DIV divmap;
-MAPINPUT MAPUND;
-MAPINPUT MAPMID;
-MAPINPUT MAPON;
-MAP_HITBOX MAPHIT;
-MAP_ENEMY MAPEN;
-ENEMY Senemy;
+MAP_DIV divmap;//マップチップ分割用クラス
+MAPINPUT MAPUND;//下のマップ
+MAPINPUT MAPMID;//中のマップ
+MAPINPUT MAPON;//上のマップ
+MAP_HITBOX MAPHIT;//当たり判定のマップ
+MAP_ENEMY MAPEN;//敵の出現マップ
+//ENEMY Senemy;
 CHARA player;
-
+BATTLE_SYSTEM Bsys;
 BATTLE_UI UI;
 int GameScene;//ゲームシーンを管理する
 int MoveMap = 0;
+int BfCheck = 0;
+//攻撃速度の判定をするか否かの関数
+int Battleflag = 0;
+//0の時自分が攻撃　１の時敵が攻撃
+int Playerflag = 0;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -89,12 +97,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (title.LOADING_IMAGE(IMAGE_TITLE) == -1) { return -1; }
 	if (Bplayer.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }
 	/*if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }*/
-	if (player.image.LOADING_DIV_IMAGE(IMAGE_PLAYER_INMAP) == -1) { return -1; }
+	if (player.image.LOADING_DIV_IMAGE(DIV_CHARA_TATE,DIV_CHARA_YOKO,MAP_DIV_WIDTH,
+		MAP_DIV_HEIGHT, IMAGE_PLAYER_INMAP) == -1) { return -1; }
+	if(BEffectNormal.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE,DIV_BT_EFFECT_YOKO,
+		DIV_BT_EFFECT_WIDTH,DIV_BT_EFFECT_HEIGHT,IMAGE_BATTLE_EFFECT_NORMAL_AT)==-1)
+	{return -1;}
 	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return -1; }
 	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return -1; }
 	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return -1; }
-	if (kougekiUI.LOADING_IMAGE(IMAGE_UI_KOUGEKI) == -1) { return -1; }
-	if (skillUI.LOADING_IMAGE(IMAGE_UI_SKILL) == -1) { return -1; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_KOUGEKI,0) == -1) { return -1; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_SKILL,1) == -1) { return -1; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_GUARD, 2) == -1) { return -1; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_ITEM, 3) == -1) { return -1; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_RUN, 4) == -1) { return -1; }
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
 
 	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
@@ -116,7 +131,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//start位置の設定
 	player.image.x = divmap.width*10; player.image.y =divmap.height*11 ;
-	player.Nowhandle = player.image.handle[0];
+	player.Nowhandle = player.image.Divhandle[0];
+	UI.UIx[0] = UI.SpotUIx;
 	/*player.image.IsDraw = TRUE;*/
 	//スタートが決まっていなければ
 	//if (startPt.x == -1 && startPt.y == -1)
@@ -175,7 +191,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//MY_FPS_WAIT();		//FPSの処理[待つ]
 	}
 
-	int DxLib_End();
+	DxLib_End();
 	return 0;
 }
 	////フォントハンドルを破棄
@@ -226,12 +242,14 @@ VOID MY_PLAY_PROC()
 	player.OldY = player.image.y;
 	if (CheckHitKey(KEY_INPUT_UP) == TRUE)
 	{
-		player.Nowhandle = player.image.handle[10];
+		player.Nowhandle = player.image.Divhandle[10];
 		player.coll.top -= 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
 		else{ player.image.y -= 5; }
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
-		{GameScene = GAME_BATTLE_SCENE;}
+		{
+			UI.UItag = 0; UI.count = 0;
+			GameScene = GAME_BATTLE_SCENE;}
 		if (MAPON.y[0][0] < 0 && player.image.y < 100)
 		{
 			player.image.y = player.OldY;
@@ -253,7 +271,7 @@ VOID MY_PLAY_PROC()
 	if (CheckHitKey(KEY_INPUT_LEFT) == TRUE )
 	{
 		/*player.image.x -= 5;*/
-		player.Nowhandle = player.image.handle[4];
+		player.Nowhandle = player.image.Divhandle[4];
 		player.coll.left -= 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
 		{}
@@ -284,7 +302,7 @@ VOID MY_PLAY_PROC()
 	}
 	if (CheckHitKey(KEY_INPUT_DOWN) == TRUE)
 	{
-		player.Nowhandle = player.image.handle[1];
+		player.Nowhandle = player.image.Divhandle[1];
 		player.coll.bottom += 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
 		{}
@@ -314,14 +332,12 @@ VOID MY_PLAY_PROC()
 	}
 	if (CheckHitKey(KEY_INPUT_RIGHT) == TRUE)
 	{
-		player.Nowhandle = player.image.handle[7];
+		player.Nowhandle = player.image.Divhandle[7];
 		player.coll.right += 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
 		else { player.image.x += 5; }
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
-		{
-			GameScene = GAME_BATTLE_SCENE;
-		}
+		{GameScene = GAME_BATTLE_SCENE;}
 		if (MAPON.x[0][MAP_YOKO_MAX1 - 1] > GAME_WIDTH && player.image.x > 650)
 		{
 			player.image.x = player.OldX;
@@ -407,20 +423,20 @@ VOID MY_PLAY_DRAW()
 		//		TRUE);
 		//}
 	}
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
-{
-	for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
-	{
-		//壁ならば
-		if (MAPHIT.kind[tate][yoko] == 63)
-		{
-			DrawBox(MAPHIT.Hitmap[tate][yoko].left, MAPHIT.Hitmap[tate][yoko].top,
-				MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
-		}
-
-	}
-}
-	DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
+//	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+//{
+//	for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+//	{
+//		//壁ならば
+//		if (MAPHIT.kind[tate][yoko] == 63)
+//		{
+//			DrawBox(MAPHIT.Hitmap[tate][yoko].left, MAPHIT.Hitmap[tate][yoko].top,
+//				MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
+//		}
+//
+//	}
+//}
+//	DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
 	return;
 }
 
@@ -450,53 +466,90 @@ VOID MY_BATTLE()
 VOID MY_BATTLE_PROC()
 {
 	UI.CHANGE_COUNT();
-	if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)
+	switch (Battleflag)
 	{
-		UI.count = 0;
-		UI.UItag -= 1;
-		if (UI.UItag < 0) { UI.UItag = 4; }
-	}
-	if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)
-	{
-		UI.count = 0;
-		UI.UItag += 1;
-		if (UI.UItag > 4) { UI.UItag = 0; }
-	}
+	case 0:
+		switch (Playerflag)
+		{
+		case 0://行動選択の処理
+			if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)//上を押したとき
+			{
+				UI.count = 0;
+				UI.UIx[UI.UItag] = UI.NonSpotUIx;
+				UI.UItag -= 1;
+				if (UI.UItag < 0) { UI.UItag = 4; }
+				UI.UIx[UI.UItag] = UI.SpotUIx;
+			}
+			if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)//下を押したとき
+			{
+				UI.count = 0;
+				UI.UIx[UI.UItag] = UI.NonSpotUIx;
+				UI.UItag += 1;
+				if (UI.UItag > 4) { UI.UItag = 0; }
+				UI.UIx[UI.UItag] = UI.SpotUIx;
+			}
+			if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+			{
+				Playerflag = 1;
+			}
+			break;
+		case 1:
+			switch (UI.UItag)
+			{
+			case 0:
+				//if (Bsys.DAMAGE_CALC(Pstates.AT, Estates[0].AT, Pstates.HP, 1.00) == 1)
+				//{
+				//	//バトルクリア画面へ
+				//}//HPを判定する関数
+				break;
+			}
+			break;
+		}
 
-	if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 0)//攻撃選択時
-	{
 
+		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 0)//攻撃選択時
+		//{
+		//	if (Bsys.DAMAGE_CALC(Pstates.AT, Estates[0].AT, Pstates.HP, 1.00) == 1)
+		//	{
+
+		//		//バトルクリア画面へ
+
+		//	}//HPを判定する関数
+
+		//}
+		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 1) {}//スキル選択時
+		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 2) {}//防御選択時
+		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 3) {}//アイテム選択時
+		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 4) {}//逃げる選択時
+		
 	}
 	return;
 }
 
-VOID MY_BATTLE_DRAW()
-{
-	DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);
-	DrawGraph(enemy.x, enemy.y, enemy.handle, TRUE);
-	DrawGraph(200, 370, Bplayer.handle, TRUE);
-	/*DrawGraph(player.x, player.y, player.handle, TRUE);*/
-	/*DrawBox(20, GAME_HEIGHT - 220, 220, GAME_HEIGHT-55, GetColor(255, 255, 0), TRUE);*/
-	DrawGraph(20, 330, UIback.handle, TRUE);
-	/*DrawStringToHandle(30, 400, "〇攻撃", GetColor(255, 255, 255), tanu30.handle);*/
-	DrawGraph(30, 340, kougekiUI.handle, TRUE);
-	DrawGraph(30, 380, kougekiUI.handle, TRUE);
-	DrawGraph(30, 420, kougekiUI.handle, TRUE);
-	DrawGraph(30, 460, kougekiUI.handle, TRUE);
-	DrawGraph(30, 500, kougekiUI.handle, TRUE);
-	/*DrawStringToHandle(30, 460, "〇防御", GetColor(255, 255, 255), tanu30.handle);
-	DrawStringToHandle(30, 490, "〇アイテム", GetColor(255, 255, 255), tanu30.handle);
-	DrawStringToHandle(30, 520, "〇にげる", GetColor(255, 255, 255), tanu30.handle);*/
-	DrawBox(0, GAME_HEIGHT - 40, GAME_WIDTH, GAME_HEIGHT, GetColor(125, 125, 0), TRUE);
-	DrawBox(350-2, 400-2, 350 + 100+2, 420+2, GetColor(255, 255, 255), TRUE);
-	float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
-	float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
-	DrawBox(350, 400,350+(int)a, 420, GetColor(0, 255, 0), TRUE);
-	DrawStringToHandle(320, GAME_HEIGHT-30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle);
-	DrawFormatStringToHandle(350, 400
-		, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.HP, Pstates.HPMAX);
-	return;
-}
+	VOID MY_BATTLE_DRAW()
+	{
+		DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);
+		DrawGraph(enemy.x, enemy.y, enemy.handle, TRUE);
+		DrawGraph(250, 370, Bplayer.handle, TRUE);
+		/*DrawGraph(player.x, player.y, player.handle, TRUE);*/
+		/*DrawBox(20, GAME_HEIGHT - 220, 220, GAME_HEIGHT-55, GetColor(255, 255, 0), TRUE);*/
+		DrawGraph(20, 330, UIback.handle, TRUE);
+		DrawGraph(UI.UIx[0], 340, UI.image.UIhandle[0], TRUE);
+		DrawGraph(UI.UIx[1], 380, UI.image.UIhandle[1], TRUE);
+		DrawGraph(UI.UIx[2], 420, UI.image.UIhandle[2], TRUE);
+		DrawGraph(UI.UIx[3], 460, UI.image.UIhandle[3], TRUE);
+		DrawGraph(UI.UIx[4], 500, UI.image.UIhandle[4], TRUE);
+		DrawBox(0, GAME_HEIGHT - 40, GAME_WIDTH, GAME_HEIGHT, GetColor(125, 125, 0), TRUE);
+		DrawBox(350 - 2, 400 - 2, 350 + 100 + 2, 420 + 2, GetColor(255, 255, 255), TRUE);
+		float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
+		float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
+		DrawBox(350, 400, 350 + (int)a, 420, GetColor(0, 255, 0), TRUE);
+		DrawStringToHandle(320, GAME_HEIGHT - 30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle);
+		DrawFormatStringToHandle(350, 400
+			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.HP, Pstates.HPMAX);
+		DrawStringToHandle(0, 0, "画像は開発中のものです。\nここより先は進めないので終了してください", GetColor(255, 255, 255), tanu20.handle);
+		return;
+	}
 
 VOID MY_END()
 {
@@ -514,3 +567,14 @@ VOID MY_END_DRAW()
 	return;
 }
 
+void BATTLE_FLAG(int PAVI, int EAVI)//速度を比較して先攻後攻を判断する関数
+{
+	if (PAVI >= EAVI)
+	{
+		Battleflag = TRUE;//プレイヤーが攻撃
+	}
+	else
+	{
+		Battleflag = FALSE;//敵が攻撃
+	}
+}
