@@ -1,5 +1,7 @@
 #include "music.hpp"
 
+
+
 BOOL MUSIC::LOAD_MUSIC(const char* musicpath)
 	{
 	strcpy_s(path, musicpath);				//ÉpÉXÇÃê›íË

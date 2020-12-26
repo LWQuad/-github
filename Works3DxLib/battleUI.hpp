@@ -20,6 +20,8 @@ public:
 	int count = 0;
 	int UItag = 0;//UI‚Ì€–Ú‚ğŠÇ—‚·‚é
 	int UIx[5] = { 30,30,30,30,30 };
+	int BrightR = 255, BrightG = 255, BrightB = 255;
+	int BrightMAX = 255;
 	BOOL CHANGE_COUNT();
 };
 

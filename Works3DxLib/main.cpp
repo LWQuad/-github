@@ -10,6 +10,9 @@
 #include "playerstatas.hpp"
 #include "Battlesystem.hpp"
 #include "BATTLEEFFECT.hpp"
+#include "Item.hpp"
+#include "music.hpp"
+#include "statesUI.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -27,7 +30,8 @@ enum GAME_SCENE	//ゲームシーンの列挙
 	GAME_PLAY_SCENE,
 	GAME_BATTLE_SCENE,
 	GAME_EVENT_SCENE,
-	GAME_END_SCENE
+	GAME_END_SCENE,
+	GAME_STATES_SCENE
 };
 
 class HPbar
@@ -55,6 +59,13 @@ VOID MY_EVENT(VOID);			//イベント画面
 VOID MY_EVENT_PROC(VOID);		//イベント画面の処理
 VOID MY_EVENT_DRAW(VOID);		//イベント画面の描画
 
+VOID MY_STATES(VOID);			//イベント画面
+VOID MY_STATES_PROC(VOID);		//イベント画面の処理
+VOID MY_STATES_DRAW(VOID);		//イベント画面の描画
+
+VOID BATTLE_PROC_NEW(VOID);		//バトルシーンを初期化する関数
+BOOL LOADING_FULL_IMAGE(VOID);	//画像全てをロードする関数
+
 PlayerStates Pstates;
 EnemyStates Estates[10];
 LOAD_SINGLE_IMAGE title;
@@ -75,6 +86,12 @@ MAP_ENEMY MAPEN;//敵の出現マップ
 CHARA player;
 BATTLE_SYSTEM Bsys;
 BATTLE_UI UI;
+STATES_UI S_UI;
+ITEM item;
+MUSIC PlayBGM;
+MUSIC BTBGM1;
+MUSIC BTSEnor;
+MUSIC BTSEENnor;
 int GameScene;//ゲームシーンを管理する
 int MoveMap = 0;
 int BfCheck = 0;
@@ -82,6 +99,8 @@ int BfCheck = 0;
 int Battleflag = 0;
 //0の時自分が攻撃　１の時敵が攻撃
 int Playerflag = 0;
+//行動後の処理
+int Playendflag = 0;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -94,25 +113,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if (DxLib_Init() == -1) { return -1; }	//ＤＸライブラリ初期化処理
 
-	if (title.LOADING_IMAGE(IMAGE_TITLE) == -1) { return -1; }
-	if (Bplayer.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }
-	/*if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return -1; }*/
-	if (player.image.LOADING_DIV_IMAGE(DIV_CHARA_TATE,DIV_CHARA_YOKO,MAP_DIV_WIDTH,
-		MAP_DIV_HEIGHT, IMAGE_PLAYER_INMAP) == -1) { return -1; }
-	if(BEffectNormal.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE,DIV_BT_EFFECT_YOKO,
-		DIV_BT_EFFECT_WIDTH,DIV_BT_EFFECT_HEIGHT,IMAGE_BATTLE_EFFECT_NORMAL_AT)==-1)
-	{return -1;}
-	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return -1; }
-	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return -1; }
-	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return -1; }
-	if (UI.image.LOADING_IMAGE(IMAGE_UI_KOUGEKI,0) == -1) { return -1; }
-	if (UI.image.LOADING_IMAGE(IMAGE_UI_SKILL,1) == -1) { return -1; }
-	if (UI.image.LOADING_IMAGE(IMAGE_UI_GUARD, 2) == -1) { return -1; }
-	if (UI.image.LOADING_IMAGE(IMAGE_UI_ITEM, 3) == -1) { return -1; }
-	if (UI.image.LOADING_IMAGE(IMAGE_UI_RUN, 4) == -1) { return -1; }
+	if (LOADING_FULL_IMAGE() == FALSE) { return -1; }//全ての画像を読み込む
+	if (PlayBGM.LOAD_MUSIC(PLAY_SCENE_MUSIC) == FALSE) { return -1; }
+	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
+	if (BTSEnor.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }
+	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_ENNORMALAT) == FALSE) { return -1; }
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
 
-	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
+	/*item.INPUTSTATES_SYUDOU(20, "やくそう", 0);*/
+
+	GameScene = GAME_BATTLE_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
 	divmap.DIV_MAP();
@@ -140,6 +150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//	//エラーメッセージ表示
 	//	MessageBox(GetMainWindowHandle(), START_ERR_CAPTION, START_ERR_TITLE, MB_OK);	return -1;
 	//}
+	Estates[0].INPUT_STATES(ENEMY_STATES_GLASS1);
 	Pstates.INPUT_STATES(PLAYER_STATES);
 	////ゴールが決まっていなければ
 	//if (GoalRect.left == -1)
@@ -179,6 +190,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				break;
 			case GAME_END_SCENE:
 				MY_END(); //エンド画面
+				break;
+			case GAME_STATES_SCENE:
+				MY_STATES(); //エンド画面
 				break;
 		}
 		//DrawGraph(title.x, title.y, title.handle, TRUE);
@@ -231,6 +245,19 @@ VOID MY_PLAY()
 
 VOID MY_PLAY_PROC()
 {
+	if (CheckSoundMem(PlayBGM.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, PlayBGM.handle);	//50%の音量にする
+		PlaySoundMem(PlayBGM.handle, DX_PLAYTYPE_LOOP);
+	}
+
+	S_UI.Scount++;
+	if (CheckHitKey(KEY_INPUT_ESCAPE) == TRUE && S_UI.Scount > S_UI.ScountMax)//ステータス画面に移動
+	{
+		S_UI.Scount = 0;
+		GameScene = GAME_STATES_SCENE;
+	}
 	//プレイヤーの当たり判定を設定
 	player.coll.left = player.image.x + 5;
 	player.coll.top = player.image.y + 5;
@@ -248,7 +275,11 @@ VOID MY_PLAY_PROC()
 		else{ player.image.y -= 5; }
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
 		{
-			UI.UItag = 0; UI.count = 0;
+			if (CheckSoundMem(PlayBGM.handle) != 0)
+			{
+				StopSoundMem(PlayBGM.handle);	//BGMを止める
+			}
+			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;}
 		if (MAPON.y[0][0] < 0 && player.image.y < 100)
 		{
@@ -280,6 +311,11 @@ VOID MY_PLAY_PROC()
 		}
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
 		{
+			if (CheckSoundMem(PlayBGM.handle) != 0)
+			{
+				StopSoundMem(PlayBGM.handle);	//BGMを止める
+			}
+			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;
 		}
 		if (MAPON.x[0][0] < 0 && player.image.x < 150)
@@ -309,6 +345,11 @@ VOID MY_PLAY_PROC()
 		else { player.image.y += 5; }
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
 		{
+			if (CheckSoundMem(PlayBGM.handle) != 0)
+			{
+				StopSoundMem(PlayBGM.handle);	//BGMを止める
+			}
+			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;
 		}
 		if (MAPON.y[MAP_TATE_MAX1 - 1][0] > GAME_HEIGHT && player.image.y > 500)
@@ -337,7 +378,13 @@ VOID MY_PLAY_PROC()
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
 		else { player.image.x += 5; }
 		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
-		{GameScene = GAME_BATTLE_SCENE;}
+		{
+			if (CheckSoundMem(PlayBGM.handle) != 0)
+			{
+				StopSoundMem(PlayBGM.handle);	//BGMを止める
+			}
+			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
+			GameScene = GAME_BATTLE_SCENE;}
 		if (MAPON.x[0][MAP_YOKO_MAX1 - 1] > GAME_WIDTH && player.image.x > 650)
 		{
 			player.image.x = player.OldX;
@@ -376,8 +423,10 @@ VOID MY_PLAY_PROC()
 
 	return;
 }
+
 VOID MY_PLAY_DRAW()
 {
+	SetDrawBright(255, 255, 255);
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)//プレイヤーより下のマップ描画
 	{
 		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -408,6 +457,7 @@ VOID MY_PLAY_DRAW()
 	{
 		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
 		{
+
 			DrawGraph(
 				MAPON.x[tate][yoko],
 				MAPON.y[tate][yoko],
@@ -440,6 +490,29 @@ VOID MY_PLAY_DRAW()
 	return;
 }
 
+VOID MY_STATES()
+{
+	MY_STATES_PROC();
+	MY_STATES_DRAW();
+	return;
+}
+
+VOID MY_STATES_PROC()
+{
+	S_UI.Scount++;
+	if (CheckHitKey(KEY_INPUT_ESCAPE) == TRUE&&S_UI.Scount>S_UI.ScountMax)
+	{
+		S_UI.Scount = 0;
+		GameScene = GAME_PLAY_SCENE;
+	}
+	return;
+}
+VOID MY_STATES_DRAW()
+{
+	DrawGraph(0, 0, S_UI.charaimage.handle, TRUE);
+	return;
+}
+
 VOID MY_EVENT()
 {
 	MY_EVENT_PROC();
@@ -465,6 +538,13 @@ VOID MY_BATTLE()
 
 VOID MY_BATTLE_PROC()
 {
+	if (CheckSoundMem(BTBGM1.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BTBGM1.handle);	//50%の音量にする
+		PlaySoundMem(BTBGM1.handle, DX_PLAYTYPE_LOOP);
+	}
+	Pstates.AT = Pstates.STR;
 	UI.CHANGE_COUNT();
 	switch (Battleflag)
 	{
@@ -488,25 +568,92 @@ VOID MY_BATTLE_PROC()
 				if (UI.UItag > 4) { UI.UItag = 0; }
 				UI.UIx[UI.UItag] = UI.SpotUIx;
 			}
-			if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+			if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)//エンターを押したとき
 			{
 				Playerflag = 1;
 			}
 			break;
-		case 1:
+		case 1://行動選択時の動作
 			switch (UI.UItag)
 			{
-			case 0:
-				//if (Bsys.DAMAGE_CALC(Pstates.AT, Estates[0].AT, Pstates.HP, 1.00) == 1)
-				//{
-				//	//バトルクリア画面へ
-				//}//HPを判定する関数
+			case 0://通常攻撃
+				BEffectNormal.isView = TRUE;//バトルエフェクトを描画する
+				BEffectNormal.Count++;
+				if (CheckSoundMem(BTSEnor.handle) == 0)
+				{
+					//BGMの音量を下げる
+					ChangeVolumeSoundMem(255 * 50 / 100, BTSEnor.handle);	//50%の音量にする
+					PlaySoundMem(BTSEnor.handle, DX_PLAYTYPE_BACK);
+				}
+				if (BEffectNormal.Count >= BEffectNormal.CountMax)
+				{
+					BEffectNormal.Count = 0;
+					BEffectNormal.Viewimage++;
+				}
+				if(BEffectNormal.Viewimage > BEffectNormal.image.Divmax)
+				{
+					BEffectNormal.isView = FALSE;
+					BEffectNormal.Count = 0;
+					BEffectNormal.Viewimage = 0;
+					if (Pstates.DAMAGE_CALC(Estates[0].DF, Estates[0].HP) == 1)
+					{ };
+					Playerflag = 0;
+					Battleflag = 1;
+				}
+				//HPを判定する関数
+
+				break;
+			case 1:
+				break;
+			case 2:
+				break;
+			case 3:
+				break;
+			case 4:
+				Pstates.RUN_AWAY(Estates[0].AGI);
+				if (Pstates.isRun == TRUE)
+				{
+					Playendflag = 0;
+					Playerflag = 2;
+				}
+				else
+				{
+					Battleflag = 1;//敵のターンへ
+				}
+				break;
+			}
+			break;
+		case 2://行動終了時の処理
+			switch (Playendflag)
+			{
+			case 0://逃亡成功時の処理
+				UI.BrightR -= 5, UI.BrightG -= 5, UI.BrightB -= 5;
+				if (UI.BrightR < 0)
+				{
+					BATTLE_PROC_NEW();
+					if (CheckSoundMem(BTBGM1.handle) != 0)
+					{
+						StopSoundMem(BTBGM1.handle);	//BGMを止める
+					}
+					GameScene = GAME_PLAY_SCENE;
+				}
 				break;
 			}
 			break;
 		}
-
-
+		break;
+	case 1:
+		BEffectNormal.Count++;
+		if (CheckSoundMem(BTSEENnor.handle) == 0&&BEffectNormal.Count>60)
+		{
+			//BGMの音量を下げる
+			ChangeVolumeSoundMem(255 * 50 / 100, BTSEENnor.handle);	//50%の音量にする
+			PlaySoundMem(BTSEENnor.handle, DX_PLAYTYPE_BACK);
+			if (Pstates.DAMAGE_CALC(Pstates.DF, Pstates.HP) == 1) {};
+			BEffectNormal.Count = 0;
+			Battleflag = 0;
+		}
+		break;
 		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 0)//攻撃選択時
 		//{
 		//	if (Bsys.DAMAGE_CALC(Pstates.AT, Estates[0].AT, Pstates.HP, 1.00) == 1)
@@ -526,30 +673,47 @@ VOID MY_BATTLE_PROC()
 	return;
 }
 
-	VOID MY_BATTLE_DRAW()
-	{
+VOID MY_BATTLE_DRAW()
+{
+	SetDrawBright(UI.BrightR,UI.BrightG,UI.BrightB);//バトル画面の輝度
 		DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);
 		DrawGraph(enemy.x, enemy.y, enemy.handle, TRUE);
 		DrawGraph(250, 370, Bplayer.handle, TRUE);
 		/*DrawGraph(player.x, player.y, player.handle, TRUE);*/
 		/*DrawBox(20, GAME_HEIGHT - 220, 220, GAME_HEIGHT-55, GetColor(255, 255, 0), TRUE);*/
 		DrawGraph(20, 330, UIback.handle, TRUE);
-		DrawGraph(UI.UIx[0], 340, UI.image.UIhandle[0], TRUE);
-		DrawGraph(UI.UIx[1], 380, UI.image.UIhandle[1], TRUE);
-		DrawGraph(UI.UIx[2], 420, UI.image.UIhandle[2], TRUE);
-		DrawGraph(UI.UIx[3], 460, UI.image.UIhandle[3], TRUE);
-		DrawGraph(UI.UIx[4], 500, UI.image.UIhandle[4], TRUE);
+		DrawGraph(UI.UIx[0], 340, UI.image.UIhandle[0], TRUE);//攻撃
+		DrawGraph(UI.UIx[1], 380, UI.image.UIhandle[1], TRUE);//スキル
+		DrawGraph(UI.UIx[2], 420, UI.image.UIhandle[2], TRUE);//防御
+		DrawGraph(UI.UIx[3], 460, UI.image.UIhandle[3], TRUE);//アイテム
+		DrawGraph(UI.UIx[4], 500, UI.image.UIhandle[4], TRUE);//逃げる
 		DrawBox(0, GAME_HEIGHT - 40, GAME_WIDTH, GAME_HEIGHT, GetColor(125, 125, 0), TRUE);
-		DrawBox(350 - 2, 400 - 2, 350 + 100 + 2, 420 + 2, GetColor(255, 255, 255), TRUE);
+		
 		float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
 		float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
+
+		float c = ((float)Estates[0].HP / (float)Estates[0].HPMAX) * 100;
+		float d = ((float)Estates[0].MP / (float)Estates[0].MPMAX) * 100;
+		DrawBox(350 - 2, 400 - 2, 350 + 100 + 2, 420 + 2, GetColor(255, 255, 255), TRUE);
 		DrawBox(350, 400, 350 + (int)a, 420, GetColor(0, 255, 0), TRUE);
-		DrawStringToHandle(320, GAME_HEIGHT - 30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle);
 		DrawFormatStringToHandle(350, 400
 			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.HP, Pstates.HPMAX);
-		DrawStringToHandle(0, 0, "画像は開発中のものです。\nここより先は進めないので終了してください", GetColor(255, 255, 255), tanu20.handle);
-		return;
-	}
+		DrawBox(350 - 2, 200 - 2, 350 + 100 + 2, 220 + 2, GetColor(255, 255, 255), TRUE);
+		DrawBox(350, 200, 350 + (int)c, 220, GetColor(0, 255, 0), TRUE);
+		DrawFormatStringToHandle(350, 200
+			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Estates[0].HP, Estates[0].HPMAX);
+		/*DrawStringToHandle(0, 0, "画像は開発中のものです。\nここより先は進めないので終了してください", GetColor(255, 255, 255), tanu20.handle);*/
+		DrawStringToHandle(0, 0, "しかし、回り込まれてしまった！", GetColor(255, 255, 255), tanu20.handle);
+		DrawFormatStringToHandle(0, 0, GetColor(255, 255, 255), tanu20.handle, "%sは逃げ出した！", Pstates.Name);
+		if (BEffectNormal.isView == TRUE)//通常攻撃のエフェクト　
+		{
+			DrawGraph(GAME_WIDTH/2, GAME_HEIGHT/2,
+				BEffectNormal.image.Divhandle[BEffectNormal.Viewimage], TRUE);
+		}
+		DrawStringToHandle(320, GAME_HEIGHT - 30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle); return;
+}
+
+
 
 VOID MY_END()
 {
@@ -577,4 +741,45 @@ void BATTLE_FLAG(int PAVI, int EAVI)//速度を比較して先攻後攻を判断する関数
 	{
 		Battleflag = FALSE;//敵が攻撃
 	}
+}
+
+VOID BATTLE_PROC_NEW(VOID)//バトルシーンを初期化する関数
+{
+	Playerflag = 0;
+	Playendflag = 0;
+	UI.UItag = 0;
+	Battleflag = 0;
+	UI.UIx[0] = UI.SpotUIx;
+	for (int i = 1; i < 5; i++)
+	{
+		UI.UIx[i] = UI.NonSpotUIx;
+	}
+	return;
+}
+
+BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
+{
+	if (title.LOADING_IMAGE(IMAGE_TITLE) == -1) { return FALSE; }
+	if (Bplayer.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return FALSE; }
+	/*if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == FALSE) { return FALSE; }*/
+	if (player.image.LOADING_DIV_IMAGE(DIV_CHARA_TATE, DIV_CHARA_YOKO, MAP_DIV_WIDTH,
+		MAP_DIV_HEIGHT, IMAGE_PLAYER_INMAP) == -1) {
+		return FALSE;
+	}
+	if (BEffectNormal.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+		DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, IMAGE_BATTLE_EFFECT_NORMAL_AT) == -1)
+	{
+		return FALSE;
+	}
+	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return FALSE; }
+	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return FALSE; }
+	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return FALSE; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_KOUGEKI, 0) == -1) { return FALSE; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_SKILL, 1) == -1) { return FALSE; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_GUARD, 2) == -1) { return FALSE; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_ITEM, 3) == -1) { return FALSE; }
+	if (UI.image.LOADING_IMAGE(IMAGE_UI_RUN, 4) == -1) { return FALSE; }
+
+	if (S_UI.charaimage.LOADING_IMAGE(IMAGE_STATES_CHARA) == -1) { return FALSE; }
+	return TRUE;
 }

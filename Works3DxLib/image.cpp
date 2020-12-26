@@ -41,18 +41,19 @@ BOOL LOAD_DIV_IMAGE::LOADING_DIV_IMAGE(int divtate,int divyoko,int divwidth,int 
 const char* divimagepath)
 {
 	int divmax = divtate * divyoko;
+	this->Divmax = divmax - 1;
 	this->Divhandle.resize(divmax);//分割数に合わせてハンドル数を増やす
 	int mapRes = LoadDivGraph(
 		divimagepath,										//マップのパス
 		divmax, divtate, divyoko,			//マップを分割する数
 		divwidth, divheight,						//画像を分割する幅と高さ
 		&this->Divhandle[0]);								//分割した画像が入るハンドル
-	//if (mapRes == -1)
-	//{
-	//	//エラーメッセージ表示
-	//	MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
-	//	return FALSE;
-	//}
+	if (mapRes == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
+		return FALSE;
+	}
 	//幅と高さを取得
 	GetGraphSize(this->Divhandle[0], &this->width, &this->height);
 	return TRUE;

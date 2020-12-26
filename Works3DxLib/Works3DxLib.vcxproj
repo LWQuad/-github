@@ -157,6 +157,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="music.cpp" />
+    <ClCompile Include="statesUI.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BATTLEEFFECT.hpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="font.hpp" />
     <ClInclude Include="hitbox.hpp" />
     <ClInclude Include="image.hpp" />
+    <ClInclude Include="Item.hpp" />
     <ClInclude Include="map.hpp" />
     <ClInclude Include="music.hpp" />
     <ClInclude Include="player.hpp" />

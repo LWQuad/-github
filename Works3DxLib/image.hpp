@@ -8,8 +8,8 @@ using namespace std;
 #define DIV_CHARA_YOKO 4
 #define DIV_CHARA DIV_CHARA_TATE*DIV_CHARA_YOKO
 
-#define DIV_BT_EFFECT_TATE 1
-#define DIV_BT_EFFECT_YOKO 5
+#define DIV_BT_EFFECT_TATE 5
+#define DIV_BT_EFFECT_YOKO 1
 #define DIV_BT_EFFECT_WIDTH 240
 #define DIV_BT_EFFECT_HEIGHT 240
 
@@ -26,7 +26,9 @@ using namespace std;
 #define IMAGE_UI_ITEM TEXT(".\\IMAGEs\\BattleUI\\アイテム.png")
 #define IMAGE_UI_RUN TEXT(".\\IMAGEs\\BattleUI\\逃げる.png")
 
-#define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\pipo-btleffect001.png")
+#define IMAGE_STATES_CHARA TEXT(".\\IMAGEs\\STATES\\ステータス画面キャラ.png")
+
+#define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\btleffectNormal.png")
 
 class LOAD_SINGLE_IMAGE //画像一枚を読み込むクラス
 {
@@ -53,6 +55,7 @@ public:
 	int y;
 	int width;
 	int height;
+	int Divmax = 0;
 	//(分割する縦の数、横の数、分割する幅、分割する高さ、画像のパス
 	BOOL LOADING_DIV_IMAGE(int,int,int,int,const char*);//分割画像を読み込む
 	//（分割する縦の数、分割する横の数、）

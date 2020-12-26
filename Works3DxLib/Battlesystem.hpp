@@ -7,6 +7,7 @@ private:
 public:
 	int damage = 0;
 	int DAMAGE_CALC(int, int,int&,float);
+
 };
 
 int BATTLE_SYSTEM::DAMAGE_CALC(int kougeki, int bougyo,int& HP,float core)

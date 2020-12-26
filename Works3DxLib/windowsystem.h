@@ -1,6 +1,6 @@
 #pragma once
-#define	GAME_WIDTH 800
-#define GAME_HEIGHT 600
+#define	GAME_WIDTH 960
+#define GAME_HEIGHT 640
 #define GAME_COLOR 32
 #define GAME_WINDOW_BAR		0	//タイトルバーはデフォルトにする
 #define GAME_WINDOW_NAME	"狐火灯篭"	//ウィンドウのタイトル
