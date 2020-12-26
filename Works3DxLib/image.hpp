@@ -25,9 +25,11 @@ using namespace std;
 #define IMAGE_UI_GUARD TEXT(".\\IMAGEs\\BattleUI\\防御.png")
 #define IMAGE_UI_ITEM TEXT(".\\IMAGEs\\BattleUI\\アイテム.png")
 #define IMAGE_UI_RUN TEXT(".\\IMAGEs\\BattleUI\\逃げる.png")
-
+//ステータス画面
 #define IMAGE_STATES_CHARA TEXT(".\\IMAGEs\\STATES\\ステータス画面キャラ.png")
-
+//イベント画面
+#define IMAGE_EVENT_TXTUIBACK TEXT(".\\IMAGEs\\EVENT\\frame_message.png")
+//バトルエフェクト
 #define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\btleffectNormal.png")
 
 class LOAD_SINGLE_IMAGE //画像一枚を読み込むクラス

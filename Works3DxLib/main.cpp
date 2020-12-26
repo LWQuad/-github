@@ -13,6 +13,7 @@
 #include "Item.hpp"
 #include "music.hpp"
 #include "statesUI.hpp"
+#include "event.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -65,6 +66,9 @@ VOID MY_STATES_DRAW(VOID);		//イベント画面の描画
 
 VOID BATTLE_PROC_NEW(VOID);		//バトルシーンを初期化する関数
 BOOL LOADING_FULL_IMAGE(VOID);	//画像全てをロードする関数
+VOID LOADING_FULL_MAP(VOID);	//マップを読み込む関数
+VOID CREATE_FULL_FONT(VOID);	//フォントを作成する関数
+BOOL LOADING_FULL_MUSIC(VOID);	//音楽を読み込む関数
 
 PlayerStates Pstates;
 EnemyStates Estates[10];
@@ -87,11 +91,13 @@ CHARA player;
 BATTLE_SYSTEM Bsys;
 BATTLE_UI UI;
 STATES_UI S_UI;
+EVENT eventS;
 ITEM item;
 MUSIC PlayBGM;
 MUSIC BTBGM1;
 MUSIC BTSEnor;
 MUSIC BTSEENnor;
+
 int GameScene;//ゲームシーンを管理する
 int MoveMap = 0;
 int BfCheck = 0;
@@ -114,65 +120,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (DxLib_Init() == -1) { return -1; }	//ＤＸライブラリ初期化処理
 
 	if (LOADING_FULL_IMAGE() == FALSE) { return -1; }//全ての画像を読み込む
-	if (PlayBGM.LOAD_MUSIC(PLAY_SCENE_MUSIC) == FALSE) { return -1; }
-	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
-	if (BTSEnor.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }
-	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_ENNORMALAT) == FALSE) { return -1; }
+	if (LOADING_FULL_MUSIC() == FALSE) { return -1; }
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
-
+	LOADING_FULL_MAP();//マップを読み込む関数
+	CREATE_FULL_FONT();//フォントを作成する関数
 	/*item.INPUTSTATES_SYUDOU(20, "やくそう", 0);*/
 
-	GameScene = GAME_BATTLE_SCENE;	//ゲームシーンはスタート画面から
+	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
-	divmap.DIV_MAP();
-	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
-	MAPUND.MAPSETTING(divmap.width, divmap.height);
-	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
-	MAPMID.MAPSETTING(divmap.width, divmap.height);
-	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);//上のマップ
-	MAPON.MAPSETTING(divmap.width, divmap.height);
-	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);//当たり判定のマップ
-	MAPHIT.MAPSETTING(divmap.width, divmap.height);
-	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height);
-	MAPEN.LOADING_MAP(GAME_MAP1_ENEMYMAP);//敵の出現マップ
-	MAPEN.MAPSETTING(divmap.width, divmap.height);
-	MAPEN.SETTING_HITBOX(divmap.width, divmap.height);
 
+	eventS.INPUTTXT(EVENT_TXT);
 	//start位置の設定
 	player.image.x = divmap.width*10; player.image.y =divmap.height*11 ;
 	player.Nowhandle = player.image.Divhandle[0];
 	UI.UIx[0] = UI.SpotUIx;
-	/*player.image.IsDraw = TRUE;*/
-	//スタートが決まっていなければ
-	//if (startPt.x == -1 && startPt.y == -1)
-	//{
-	//	//エラーメッセージ表示
-	//	MessageBox(GetMainWindowHandle(), START_ERR_CAPTION, START_ERR_TITLE, MB_OK);	return -1;
-	//}
 	Estates[0].INPUT_STATES(ENEMY_STATES_GLASS1);
 	Pstates.INPUT_STATES(PLAYER_STATES);
-	////ゴールが決まっていなければ
-	//if (GoalRect.left == -1)
-	//{
-	//	//エラーメッセージ表示
-	//	MessageBox(GetMainWindowHandle(), GOAL_ERR_CAPTION, GOAL_ERR_TITLE, MB_OK);	return -1;
-	//}
-	tanu20.CREATE_FONT(20,FONT_TANU_PATH,FONT_TANU_NAME);
-	tanu30.CREATE_FONT(30, FONT_TANU_PATH, FONT_TANU_NAME);
+
 	//無限ループ
 	while (TRUE)
 	{
 		if (ProcessMessage() != 0) { break; }	//メッセージ処理の結果がエラーのとき、強制終了
 		if (ClearDrawScreen() != 0) { break; }	//画面を消去できなかったとき、強制終了
-
-		//MY_ALL_KEYDOWN_UPDATE();				//押しているキー状態を取得
-
-
-		//MY_MOUSE_UPDATE();						//マウスの状態を取得
-
 		//MY_FPS_UPDATE();	//FPSの処理[更新]
-
 		//シーンごとに処理を行う
 		switch (GameScene)
 		{
@@ -195,13 +166,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				MY_STATES(); //エンド画面
 				break;
 		}
-		//DrawGraph(title.x, title.y, title.handle, TRUE);
 		//MY_FPS_DRAW();		//FPSの処理[描画]
-		
-
-
 		ScreenFlip();		//モニタのリフレッシュレートの速さで裏画面を再描画
-
 		//MY_FPS_WAIT();		//FPSの処理[待つ]
 	}
 
@@ -257,6 +223,12 @@ VOID MY_PLAY_PROC()
 	{
 		S_UI.Scount = 0;
 		GameScene = GAME_STATES_SCENE;
+	}
+
+	if (CheckHitKey(KEY_INPUT_RETURN) == TRUE && S_UI.Scount > S_UI.ScountMax)//ステータス画面に移動
+	{
+		S_UI.Scount = 0;
+		GameScene = GAME_EVENT_SCENE;
 	}
 	//プレイヤーの当たり判定を設定
 	player.coll.left = player.image.x + 5;
@@ -407,20 +379,6 @@ VOID MY_PLAY_PROC()
 	if (player.image.x > GAME_WIDTH-divmap.width) { player.image.x = GAME_WIDTH - divmap.width; }
 	if (player.image.y < 0) { player.image.y = 0; }
 	if (player.image.y > GAME_HEIGHT - divmap.height) { player.image.y = GAME_HEIGHT - divmap.height; }
-	//player.coll.left = player.image.x + 5;
-	//player.coll.top = player.image.y + 5;
-	//player.coll.right = player.image.x + player.image.width - 5;
-	//player.coll.bottom = player.image.y + player.image.height - 5;
-	//if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	//{
-	//	player.image.x = player.OldX;
-	//	player.image.y = player.OldY;
-	//}
-
-
-
-
-
 	return;
 }
 
@@ -522,10 +480,26 @@ VOID MY_EVENT()
 
 VOID MY_EVENT_PROC()
 {
+	eventS.count++;
+	if (eventS.count > eventS.countMax)
+	{
+		if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+		{
+			eventS.strLnum+=3;
+			eventS.count = 0;
+		}
+	}
 	return;
 }
 VOID MY_EVENT_DRAW()
 {
+	DrawGraph(0,GAME_HEIGHT-190, eventS.txtUI.handle, TRUE);
+	DrawFormatStringToHandle(50, GAME_HEIGHT - 120, GetColor(255, 255, 255),
+		tanu30.handle,eventS.str[eventS.strLnum],  TRUE);
+	DrawFormatStringToHandle(50, GAME_HEIGHT - 90, GetColor(255, 255, 255),
+		tanu30.handle, eventS.str[eventS.strLnum+1], TRUE);
+	DrawFormatStringToHandle(50, GAME_HEIGHT - 60, GetColor(255, 255, 255),
+		tanu30.handle, eventS.str[eventS.strLnum+2], TRUE);
 	return;
 }
 
@@ -654,20 +628,6 @@ VOID MY_BATTLE_PROC()
 			Battleflag = 0;
 		}
 		break;
-		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 0)//攻撃選択時
-		//{
-		//	if (Bsys.DAMAGE_CALC(Pstates.AT, Estates[0].AT, Pstates.HP, 1.00) == 1)
-		//	{
-
-		//		//バトルクリア画面へ
-
-		//	}//HPを判定する関数
-
-		//}
-		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 1) {}//スキル選択時
-		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 2) {}//防御選択時
-		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 3) {}//アイテム選択時
-		//if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.UItag == 4) {}//逃げる選択時
 		
 	}
 	return;
@@ -779,7 +739,43 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_GUARD, 2) == -1) { return FALSE; }
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_ITEM, 3) == -1) { return FALSE; }
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_RUN, 4) == -1) { return FALSE; }
-
+	//ステータス画面
 	if (S_UI.charaimage.LOADING_IMAGE(IMAGE_STATES_CHARA) == -1) { return FALSE; }
+	//イベント画面
+	if (eventS.txtUI.LOADING_IMAGE(IMAGE_EVENT_TXTUIBACK) == -1) { return FALSE; }
+	return TRUE;
+}
+
+VOID LOADING_FULL_MAP()
+{
+	divmap.DIV_MAP();
+	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
+	MAPUND.MAPSETTING(divmap.width, divmap.height);
+	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
+	MAPMID.MAPSETTING(divmap.width, divmap.height);
+	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);//上のマップ
+	MAPON.MAPSETTING(divmap.width, divmap.height);
+	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);//当たり判定のマップ
+	MAPHIT.MAPSETTING(divmap.width, divmap.height);
+	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height);
+	MAPEN.LOADING_MAP(GAME_MAP1_ENEMYMAP);//敵の出現マップ
+	MAPEN.MAPSETTING(divmap.width, divmap.height);
+	MAPEN.SETTING_HITBOX(divmap.width, divmap.height);
+	return;
+}
+
+VOID CREATE_FULL_FONT()
+{
+	tanu20.CREATE_FONT(20, FONT_TANU_PATH, FONT_TANU_NAME);
+	tanu30.CREATE_FONT(30, FONT_TANU_PATH, FONT_TANU_NAME);
+	return;
+}
+
+BOOL LOADING_FULL_MUSIC()
+{
+	if (PlayBGM.LOAD_MUSIC(PLAY_SCENE_MUSIC) == FALSE) { return -1; }
+	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
+	if (BTSEnor.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }
+	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_ENNORMALAT) == FALSE) { return -1; }
 	return TRUE;
 }

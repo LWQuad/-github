@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="event.cpp" />
     <ClCompile Include="font.cpp" />
     <ClCompile Include="hitbox.cpp" />
     <ClCompile Include="image.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Battlesystem.hpp" />
     <ClInclude Include="battleUI.hpp" />
     <ClInclude Include="enemystatas.hpp" />
+    <ClInclude Include="event.hpp" />
     <ClInclude Include="font.hpp" />
     <ClInclude Include="hitbox.hpp" />
     <ClInclude Include="image.hpp" />
