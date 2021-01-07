@@ -138,8 +138,8 @@ int Playendflag = 0;
 int Enemyflag = 0;
 //スキルの行動処理
 int skillflag = 0;
-
-BOOL Levelupflag;
+int damage_culcflg = 0;
+BOOL NowLvUPflg=FALSE;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	ChangeWindowMode(TRUE);								//ウィンドウモードに設定
@@ -682,7 +682,7 @@ VOID MY_BATTLE_PROC()
 	Pstates.AT = Pstates.STR;
 	UI.CHANGE_COUNT();
 
-	if (UI.Mssgcount > UI.MssgcntMx)
+	if (UI.Mssgcount > UI.MssgcntMx)//エンカウント時のメッセージ
 	{
 		UI.EncntUIisView = FALSE;
 	}
@@ -752,39 +752,55 @@ VOID MY_BATTLE_PROC()
 						BEffectNormal.isView = FALSE;
 						BEffectNormal.Count = 0;
 						BEffectNormal.Viewimage = 0;
+						damage_culcflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
 						BEffectNormal.effectflg = 1;
+						
 					}
 					break;
 					case 1:
-					int DAMAGEflag = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
 						if (Pstates.criflg == TRUE) {//クリティカル発生時
 							Message = CRITICAL;
 							if (UI.cricnt == 1)
-							{WaitTimer(1000);}
-							UI.cricnt++;
+							{
+								WaitTimer(1000);
+								BEffectNormal.effectflg = 2;
+							}
+							UI.cricnt=1;
 						}
 						else{
 							Message = GIVE_DAMAGE;
 							if (UI.cricnt == 1)
-							{WaitTimer(1000);}
-							UI.cricnt++;
-						}
-						if (DAMAGEflag==1)//敵を倒したとき
-						{
-							
-							Message = DEFEAT_EN;
-							if (UI.Endefeatcnt == 1) { WaitTimer(2000); }
-							Message = GET_EXP;
-							if (UI.Endefeatcnt == 2) {
-								WaitTimer(2000);
-								Levelupflag = Pstates.LEVELUP();
-								Pstates.EXP += Estates.EXP;
+							{
+								WaitTimer(1000);
+								BEffectNormal.effectflg = 2;
 							}
-							UI.Endefeatcnt=1;
-							if (UI.Endefeatcnt>=3&&Levelupflag== TRUE)
+							UI.cricnt=1;
+						}
+						break;
+					case 2:
+						if (damage_culcflg==1)//敵を倒したとき
+						{
+							UI.Endefeatcnt++;
+							if (UI.Endefeatcnt < 60)
+							{
+								Message = DEFEAT_EN;
+							}
+							else if (UI.Endefeatcnt < 120)
+							{
+								Message = GET_EXP;
+								if(UI.PlusEXPflg==TRUE)//経験値を一度だけ加算する
+								{
+									Pstates.EXP += Estates.EXP;
+									UI.PlusEXPflg = FALSE;
+									if (Pstates.EXP >= Pstates.EXPMAX)
+									{//経験値の最大値を超えたときレベルアップ関数を動かす
+										NowLvUPflg = Pstates.LEVELUP();
+									}
+								}
+							}
+							if (120 < UI.Endefeatcnt && NowLvUPflg == TRUE)
 							{//レベルアップ時の処理 
 								Message = Levelup;
-								WaitTimer(1000);
 								if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
 								{
 									Playendflag = 0;
@@ -802,6 +818,8 @@ VOID MY_BATTLE_PROC()
 						}
 						else {
 							Pstates.criflg = FALSE;
+							BEffectNormal.effectflg = 0;
+							UI.cricnt = 0;
 							Playerflag = 0;
 							Battleflag = 1;
 						}
@@ -1224,6 +1242,13 @@ VOID BATTLE_PROC_NEW(VOID)//バトルシーンを初期化する関数
 	skillflag = 0;
 	UI.Skilltag = 0;
 	UI.EncntUIisView = TRUE;
+	BEffectNormal.effectflg = 0;		//通常エフェクトの初期化
+	Pstates.criflg = FALSE;				//クリティカルの発生判定を否定に戻す
+	UI.PlusEXPflg = TRUE;				//EXPの計算をできるように戻す
+	UI.LvUPflg = TRUE;					//レベルアップの判定をできるように戻す
+	UI.Endefeatcnt = 0;					//敵を倒したときの処理のカウントを初期化する
+	Pstates.LvUPBUF_NEW();				//レベルアップの加算値の変数を初期化
+	UI.cricnt = 0;						//クリティカル判定のカウントを初期化
 	UI.UIx[0] = UI.SpotUIx;
 	UI.SKILL_MOVE_NEW();
 	Message = ENCOUNT;
@@ -1386,6 +1411,9 @@ VOID DRAW_MESSAGE(int mestype)
 	case Levelup:
 		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
 			"レベルが%d上がった！HP+%d MP+%d 攻撃力+%d 魔法攻撃力+%d すばやさ+%d 防御力+%d 魔法防御力+%d",
-			Pstates.bLv, Pstates.bHPMAX, Pstates.bMPMAX, Pstates.bSTR, Pstates.bMSTR);
+			Pstates.bLv, Pstates.bHPMAX, Pstates.bMPMAX, Pstates.bSTR, Pstates.bMSTR,
+			Pstates.bAGI,Pstates.bDF,Pstates.bMDF);
+		return;
+		break;
 	}
 }

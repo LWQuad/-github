@@ -24,10 +24,10 @@ private:
 	//int uEXP=50;
 	int criRan = 100;
 public:
-	int HP, HPMAX, MP, MPMAX, STR, AT,MSTR,MAT,DF,MDF, AGI, Lv, EXP,EXPMAX;//ステータス
+	int HP, HPMAX, MP, MPMAX, STR, AT, MSTR, MAT, DF, MDF, AGI, Lv, EXP, EXPMAX;//ステータス
 	int bHPMAX = 0, bMPMAX = 0, bSTR = 0, bMSTR = 0, bDF = 0, bMDF = 0, bAGI = 0, bLv = 0;
 	int damage = 0;
-	BOOL isRun=FALSE;
+	BOOL isRun = FALSE;
 	int bufAT, bufDF, bufMDF, bufAGI;//バフ込みのステータス
 	int OldbufAT, OldbufDF, OldbufMDF, OldbufAGI;
 	float DamageHosei = 1.00;
@@ -49,55 +49,51 @@ public:
 	//特殊効果
 
 	//技用の関数
-	BOOL SKILL_IAI_MUTUKI(int,int&,int);
+	BOOL SKILL_IAI_MUTUKI(int, int&, int);
 
 	char Name[30] = { "\0" };
-	
+
 	BOOL INPUT_STATES(const char*);//ステータスのロード
 
 	BOOL SAVE_STATES(const char*);//ステータスのセーブ
 
-	void CHANGE_SWORD(int,int);//武器の切り替え
+	void CHANGE_SWORD(int, int);//武器の切り替え
 
 	void RUN_AWAY(int);
 
 	BOOL LEVELUP()//レベルアップ関数（途中）
 	{
-		if (EXP >= EXPMAX)
+		if (EXPMAX > EXP) { return FALSE; }
+		while (EXPMAX < EXP)
 		{
-			while (1)
-			{
-				if (EXPMAX - EXP >= 0)
-				{
-					SRand(1);
-					int randam = Lv / 10 + 2;
-					//上昇量を保存する
-					bLv += 1;
-					bHPMAX = uHP * Lv / 10 + GetRand(randam);
-					bMPMAX += uMP * Lv / 10 + GetRand(randam);
-					bSTR += uSTR * Lv / 10 + GetRand(randam);
-					bMSTR = uMSTR * Lv / 10 + GetRand(randam);
-					bAGI += uAGI * Lv / 10 + GetRand(randam);
-					bDF += uDF * Lv / 10 + GetRand(randam);
-					bMDF += uMDF * Lv / 10 + GetRand(randam);
-					EXP -= EXPMAX;
-					EXPMAX = (EXPMAX * 1.1 + Lv + 10) / 2;
-				}
-				else { break; }
-			}
-			//上昇量を増分
-			Lv += bLv;
-			HPMAX += bHPMAX;
-			MPMAX += MPMAX;
-			STR += STR;
-			AGI += AGI;
-			DF += DF;
-			MDF += MDF;
-			return TRUE;
+				int randam = 2;
+				//上昇量を保存する
+				bLv += 1;
+				bHPMAX += uHP + GetRand(randam);
+				bMPMAX += uMP + GetRand(randam);
+				bSTR += uSTR + GetRand(randam);
+				bMSTR += uMSTR + GetRand(randam);
+				bAGI += uAGI + GetRand(randam);
+				bDF += uDF + GetRand(randam);
+				bMDF += uMDF + GetRand(randam);
+				EXP = EXP - EXPMAX;
+				EXPMAX = (int)(EXPMAX * 1.1 + Lv + 10) / 2;
 		}
-		return FALSE;
+		//上昇量を増分
+		Lv += bLv;
+		HPMAX += bHPMAX;
+		MPMAX += bMPMAX;
+		STR += bSTR;
+		MSTR += bMSTR;
+		AGI += bAGI;
+		DF += bDF;
+		MDF += bMDF;
+		return TRUE;
 	}
+	
 
+
+	VOID LvUPBUF_NEW();//レベルアップの上昇値の保存変数を初期化
 	int DAMAGE_CALC(int, int&);//ダメージ計算の関数(相手の防御力,相手のHP)
 	int IAI_KITUNEISSOKU_CALC(int, int&);
 	int KIKON_HOTAL_CALC(int, int&);
@@ -180,4 +176,9 @@ BOOL PlayerStates::SKILL_IAI_MUTUKI(int bougyo,int& hp,int bufAT)
 		return 1;
 	}
 	return 0;//それ以外の時
+}
+
+VOID PlayerStates::LvUPBUF_NEW()//レベルアップの上昇値を初期化
+{
+	bHPMAX = 0, bMPMAX = 0, bSTR = 0, bMSTR = 0, bDF = 0, bMDF = 0, bAGI = 0, bLv = 0;
 }

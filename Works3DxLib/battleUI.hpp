@@ -34,6 +34,8 @@ public:
 	int Scount = 0;
 	int cricnt = 0;
 	int Endefeatcnt = 0;
+	BOOL PlusEXPflg = TRUE;
+	BOOL LvUPflg = TRUE;
 	//ƒXƒLƒ‹‚Ì•`‰æêŠ‚ğ¦‚·
 	float Iaix = 480, Iaiy = 400, Iaix2 = 710, Iaiy2 = 490;//‹‡‚Ì•`‰æêŠ
 	float Iaiy2Move = (490 - 430) / 30; int IaiCount = 0;

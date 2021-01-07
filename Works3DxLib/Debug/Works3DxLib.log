@@ -2,12 +2,11 @@
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(39,19): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(42,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(47,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(84,40): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(109,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(110,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(124,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(138,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(173,25): warning C4305: '=': 'double' から 'float' へ切り詰めます。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(105,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(106,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(120,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(134,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(169,25): warning C4305: '=': 'double' から 'float' へ切り詰めます。
 C:\作品Ⅲgithub\Works3DxLib\Battlesystem.hpp(16,5): warning C4552: '-': 式の結果が使用されていません
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): warning C4474: 'fscanf': 書式文字列に渡された引数の数が多すぎます
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): message : プレースホルダーとそのパラメーターには 3 の可変個引数が必要ですが、4 が指定されています。
