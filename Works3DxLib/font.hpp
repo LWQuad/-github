@@ -18,6 +18,7 @@ public:
 	int type;					//タイプ
 
 	BOOL CREATE_FONT(int, const char*, const char*);
+	BOOL CREATE_FONT_NONEDGE(int, const char*, const char*);
 	//フォントハンドルの作成
 	//(フォントサイズ　フォントのパス　フォントの名前)
 

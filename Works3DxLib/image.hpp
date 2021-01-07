@@ -25,8 +25,13 @@ using namespace std;
 #define IMAGE_UI_GUARD TEXT(".\\IMAGEs\\BattleUI\\防御.png")
 #define IMAGE_UI_ITEM TEXT(".\\IMAGEs\\BattleUI\\アイテム.png")
 #define IMAGE_UI_RUN TEXT(".\\IMAGEs\\BattleUI\\逃げる.png")
+//タイトル画面
+#define IMAGE_START_ROGO TEXT(".\\IMAGEs\\タイトルロゴ250x750.png")
 //ステータス画面
-#define IMAGE_STATES_CHARA TEXT(".\\IMAGEs\\STATES\\ステータス画面キャラ.png")
+#define IMAGE_STATES_CHARA TEXT(".\\IMAGEs\\STATES\\キャラ400x500.png")
+#define IMAGE_STATES_UI_ST TEXT(".\\IMAGEs\\statesUI\\UIステータス画面.png")
+#define IMAGE_STATES_BACK TEXT(".\\IMAGEs\\STATES\\ステータス画面背景.png")
+#define IMAGE_STATES_BACK2 TEXT(".\\IMAGEs\\STATES\\ステータス画面背景2.png")
 //イベント画面
 #define IMAGE_EVENT_TXTUIBACK TEXT(".\\IMAGEs\\EVENT\\frame_message.png")
 //バトルエフェクト
@@ -61,5 +66,12 @@ public:
 	//(分割する縦の数、横の数、分割する幅、分割する高さ、画像のパス
 	BOOL LOADING_DIV_IMAGE(int,int,int,int,const char*);//分割画像を読み込む
 	//（分割する縦の数、分割する横の数、）
+};
+
+class DEFAULT_COLOR
+{
+public:
+	int White = GetColor(255, 255, 255);
+	int Black = GetColor(0, 0, 0);
 };
 

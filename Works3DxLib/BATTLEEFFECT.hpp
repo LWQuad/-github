@@ -9,4 +9,5 @@ public:
 	int CountMax = 5;
 	int Count = 0;
 	int Viewimage = 0;
+	int effectflg = 0;
 };

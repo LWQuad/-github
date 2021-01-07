@@ -15,7 +15,7 @@ public:
 class MAP_ENEMY :public MAP_HITBOX
 {
 private:
-	int flagMAX = 500;
+	int flagMAX = 800;
 public:
 	int flagPT=0;
 	int MY_CHECK_ENEMY_PLAYER_COLL(RECT);
