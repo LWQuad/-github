@@ -279,6 +279,7 @@ VOID MY_START_DRAW()
 	DrawFormatStringToHandle(GAME_WIDTH/2-Nsize/2, 400, C.Black, tanu30n.handle, "はじめから");
 	int Lsize = GetDrawStringWidthToHandle("つづきから", 11, tanu30n.handle);
 	DrawFormatStringToHandle(GAME_WIDTH / 2 - Lsize / 2, 500, C.Black, tanu30n.handle, "つづきから");
+	DrawFormatStringToHandle(0, 0, C.White, tanu30n.handle, "*画像は開発中のものです（本編では差し替えます）");
 	return;
 }
 
