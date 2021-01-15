@@ -31,6 +31,7 @@ public:
 	int Expcount = 0;
 	int ExpcntMx = 90;
 	int Skilltag = 0;
+	int SkilltagIAI = 0;
 	int Scount = 0;
 	int cricnt = 0;
 	int Endefeatcnt = 0;
@@ -48,6 +49,8 @@ public:
 	float MagicxMove = (720 - 480) / 30, MagicyMove = (500 - 400) / 30,
 		Magicx2Move = (950 - 710) / 30, Magicy2Move = (590 - 430) / 30;
 	int SnameIAI, SnameKiKon, SnameKen, SnameMagic;
+
+	int Iaiskillx = 480, Iaiskilly = 435, Iaiskillx2 = 940, Iaiskilly2 = 60;
 	BOOL EncntUIisView = TRUE;
 	BOOL CHANGE_COUNT();
 	BOOL ENTER_COUNT_SKILL();

@@ -29,7 +29,10 @@ using namespace std;
 #define IMAGE_START_ROGO TEXT(".\\IMAGEs\\タイトルロゴ250x750.png")
 //ステータス画面
 #define IMAGE_STATES_CHARA TEXT(".\\IMAGEs\\STATES\\キャラ400x500.png")
-#define IMAGE_STATES_UI_ST TEXT(".\\IMAGEs\\statesUI\\UIステータス画面.png")
+#define IMAGE_STATES_UI_ST TEXT(".\\IMAGEs\\STATES\\ステータスUI.png")
+#define IMAGE_STATES_UI_SAVE TEXT(".\\IMAGEs\\STATES\\ステータスUIセーブ.png")
+#define IMAGE_STATES_UI_ITEM TEXT(".\\IMAGEs\\STATES\\ステータスUIアイテム.png")
+#define IMAGE_STATES_UI_LOAD TEXT(".\\IMAGEs\\STATES\\ステータスUIロード.png")
 #define IMAGE_STATES_BACK TEXT(".\\IMAGEs\\STATES\\ステータス画面背景.png")
 #define IMAGE_STATES_BACK2 TEXT(".\\IMAGEs\\STATES\\ステータス画面背景2.png")
 //イベント画面

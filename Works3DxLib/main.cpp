@@ -36,21 +36,7 @@ enum GAME_SCENE	//ゲームシーンの列挙
 	GAME_STATES_SCENE
 };
 
-enum BATTLE_MESSAGE
-{
-	ENCOUNT,
-	SELECT_NORMAL_AT,
-	NORMAL_AT,
-	SKILL,
-	GUARD,
-	SELECT_ITEM,
-	RUN,
-	CRITICAL,
-	DEFEAT_EN,
-	GET_EXP,
-	GIVE_DAMAGE,
-	Levelup
-};
+
 
 class HPbar
 {
@@ -99,10 +85,9 @@ LOAD_SINGLE_IMAGE Bplayer;
 LOAD_SINGLE_IMAGE enemy;
 LOAD_SINGLE_IMAGE btbk;
 LOAD_SINGLE_IMAGE UIback;
-BATTLE_EFFECT BEffectNormal;
-CREATE_FONTHANDLE tanu20;
-CREATE_FONTHANDLE tanu30;
-CREATE_FONTHANDLE tanu30n;
+BATTLE_EFFECT BEnorAT;
+BATTLE_EFFECT BEhotal;
+CREATE_FONTHANDLE tanu20,tanu20n,tanu30,tanu30n;
 MAP_DIV divmap;//マップチップ分割用クラス
 MAPINPUT MAPUND;//下のマップ
 MAPINPUT MAPMID;//中のマップ
@@ -138,8 +123,13 @@ int Playendflag = 0;
 int Enemyflag = 0;
 //スキルの行動処理
 int skillflag = 0;
-int damage_culcflg = 0;
+int choiceskillflag = 0;
+int ENdefflg = 0;
 BOOL NowLvUPflg=FALSE;
+//ステータス画面のスイッチ分で使用するフラグ
+int categori = 0;
+int cateprocess = 0;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	ChangeWindowMode(TRUE);								//ウィンドウモードに設定
@@ -170,6 +160,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	player.Nowhandle = player.image.Divhandle[0];
 	UI.UIx[0] = UI.SpotUIx;
 	Pstates.INPUT_STATES(PLAYER_STATES);
+	Pstates.IAI.INPUT_SKILL(PLAYER_SKILL_IAI_DATA);
 
 	//無限ループ
 	while (TRUE)
@@ -196,7 +187,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				MY_END(); //エンド画面
 				break;
 			case GAME_STATES_SCENE:
-				MY_STATES(); //エンド画面
+				MY_STATES(); //ステータス画面
 				break;
 		}
 		//MY_FPS_DRAW();		//FPSの処理[描画]
@@ -567,31 +558,87 @@ VOID MY_STATES()
 
 VOID MY_STATES_PROC()
 {
-	S_UI.S_count++;
-	S_UI.C_count++;
-	if ((CheckHitKey(KEY_INPUT_ESCAPE) == TRUE)&&S_UI.CHECK_CHENGE_COUNT_STorPLY()==TRUE)
+	//0=ステータス画面
+	//1=セーブ画面
+
+	switch (categori)
 	{
-		S_UI.S_count = 0;
-		GameScene = GAME_PLAY_SCENE;
-	}
-	if ((CheckHitKey(KEY_INPUT_RIGHT) == TRUE)&&S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-	{
-		S_UI.Ctag += 1;
-		S_UI.C_count = 0;
-		if (S_UI.Ctag >=4)
+	case 0:
+		//プレイ画面とステータス画面を切り替える
+		S_UI.S_count++;
+		S_UI.C_count++;
+		if ((CheckHitKey(KEY_INPUT_ESCAPE) == TRUE) && S_UI.CHECK_CHENGE_COUNT_STorPLY() == TRUE)
 		{
-			S_UI.Ctag = 4;
+			S_UI.S_count = 0;
+			GameScene = GAME_PLAY_SCENE;
 		}
-	}
-	if (CheckHitKey(KEY_INPUT_LEFT) == TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-	{
-		S_UI.Ctag -= 1;
-		S_UI.C_count = 0;
-		if (S_UI.Ctag <= 0)
+		//カテゴリの枠を変える
+		if ((CheckHitKey(KEY_INPUT_RIGHT) == TRUE) && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
 		{
-			S_UI.Ctag = 0;
+			S_UI.Ctag += 1;
+			S_UI.C_count = 0;
+			if (S_UI.Ctag >= 4)
+			{
+				S_UI.Ctag = 4;
+			}
 		}
+		if (CheckHitKey(KEY_INPUT_LEFT) == TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
+		{
+			S_UI.Ctag -= 1;
+			S_UI.C_count = 0;
+			if (S_UI.Ctag <= 0)
+			{
+				S_UI.Ctag = 0;
+			}
+		}
+		if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)//エンターを押すとカテゴリ内の処理へ移動
+		{
+			S_UI.S_count=0;
+			S_UI.C_count=0;
+			if (S_UI.Ctag == 0) {};
+			if (S_UI.Ctag == 1) { categori = 1; cateprocess = 1; }//セーブ処理へ
+		}
+		break;
+	case(1):
+		switch(cateprocess)
+		{
+		case(1)://セーブ処理
+			S_UI.C_count++;
+			if (CheckHitKey(KEY_INPUT_DOWN)==TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
+			{
+				if (S_UI.Savetag > 2) { S_UI.Savetag = 2; }
+				else {
+					S_UI.C_count = 0;
+					S_UI.Savetag++;
+				}
+			}
+			if (CheckHitKey(KEY_INPUT_UP)==TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
+			{
+				if (S_UI.Savetag < 0) { S_UI.Savetag = 0; }
+				else {
+					S_UI.C_count = 0;
+					S_UI.Savetag--;
+				}
+			}
+			if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+			{
+				if(S_UI.Savetag == 0)
+				{
+					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT0);
+				}
+				if (S_UI.Savetag == 1)
+				{
+					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT1);
+				}
+				if (S_UI.Savetag == 2)
+				{
+					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT2);
+				}
+			}
+		}
+		break;
 	}
+
 	return;
 }
 VOID MY_STATES_DRAW()
@@ -604,31 +651,43 @@ VOID MY_STATES_DRAW()
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
 	DrawGraph(15, 80, S_UI.back2.handle, TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND,0);
-	if (S_UI.Ctag == 0)
+	DrawGraph(15, 15, S_UI.UIimg.UIhandle[0], TRUE);
+	DrawGraph(252, 15, S_UI.UIimg.UIhandle[1], TRUE);
+	DrawGraph(488, 15, S_UI.UIimg.UIhandle[2], TRUE);
+	DrawGraph(725, 15, S_UI.UIimg.UIhandle[3], TRUE);
+	switch (categori)
 	{
-		DrawGraph(GAME_WIDTH- S_UI.charaimg.width-20, 124-5,
-			S_UI.charaimg.handle, TRUE);
-		DrawGraph(0, 0, S_UI.UIimg.UIhandle[0], TRUE);
-		DrawBox(50 - 2, 50 - 2, 50 + 100 + 2, 80 + 2, GetColor(255, 255, 255), TRUE);
-		DrawBox(50, 50, 50 + (int)a, 80, GetColor(0, 255, 0), TRUE);
-		DrawFormatStringToHandle(50, 90
-			, Color, tanu30n.handle, "Lv %4d", Pstates.Lv);
-		DrawFormatStringToHandle(50, 130
-			, Color, tanu30n.handle, "HP %d/%d", Pstates.HP, Pstates.HPMAX);
-		DrawFormatStringToHandle(50, 170
-			, Color, tanu30n.handle, "MP %d/%d", Pstates.MP, Pstates.MPMAX);
-		DrawFormatStringToHandle(50, 210
-			, Color, tanu30n.handle, "物理攻撃力 %d(+%d)", Pstates.AT, Pstates.STR);
-		DrawFormatStringToHandle(50, 250
-			, Color, tanu30n.handle, "物理防御力 %d", Pstates.DF);
-		DrawFormatStringToHandle(50, 290
-			, Color, tanu30n.handle, "魔法防御力 %d", Pstates.MDF);
-		DrawFormatStringToHandle(50, 330
-			, Color, tanu30n.handle, "すばやさ %d", Pstates.AGI);
-		DrawFormatStringToHandle(50, 370
-			, Color, tanu30n.handle, "次のレベルまで %dExp", Pstates.EXPMAX - Pstates.EXP);
-		DrawBox(50 - 2, 405 - 2, 50 + 300 + 2, 410 + 2, GetColor(255, 255, 255), TRUE);
-		DrawBox(50, 405, 50 + (int)c, 410, GetColor(0, 255, 0), TRUE);
+	case(0):
+		if (S_UI.Ctag == 0)
+		{
+			DrawGraph(GAME_WIDTH - S_UI.charaimg.width - 20, 124 - 5,
+				S_UI.charaimg.handle, TRUE);
+			DrawBox(S_UI.STallx - 2, S_UI.STallx - 2, S_UI.STallx + 100 + 2, 80 + 2, GetColor(255, 255, 255), TRUE);
+			DrawBox(S_UI.STallx, S_UI.STallx, S_UI.STallx + (int)a, 80, GetColor(0, 255, 0), TRUE);
+			DrawFormatStringToHandle(S_UI.STallx, 90
+				, Color, tanu30n.handle, "狐耳族:%s", Pstates.Name);
+			DrawFormatStringToHandle(S_UI.STallx, 90
+				, Color, tanu20n.handle, "Lv %4d", Pstates.Lv);
+			DrawFormatStringToHandle(S_UI.STallx, 130
+				, Color, tanu20n.handle, "HP %d/%d", Pstates.HP, Pstates.HPMAX);
+			DrawFormatStringToHandle(S_UI.STallx, 170
+				, Color, tanu20n.handle, "MP %d/%d", Pstates.MP, Pstates.MPMAX);
+			DrawFormatStringToHandle(S_UI.STallx, 210
+				, Color, tanu20n.handle, "物理攻撃力 %d(+%d)", Pstates.AT, Pstates.STR);
+			DrawFormatStringToHandle(S_UI.STallx, 250
+				, Color, tanu20n.handle, "物理防御力 %d", Pstates.DF);
+			DrawFormatStringToHandle(S_UI.STallx, 290
+				, Color, tanu20n.handle, "魔法防御力 %d", Pstates.MDF);
+			DrawFormatStringToHandle(S_UI.STallx, 330
+				, Color, tanu20n.handle, "すばやさ %d", Pstates.AGI);
+			DrawFormatStringToHandle(S_UI.STallx, 370
+				, Color, tanu20n.handle, "次のレベルまで %dExp", Pstates.EXPMAX - Pstates.EXP);
+			DrawBox(S_UI.STallx - 2, 405 - 2, S_UI.STallx + 300 + 2, 410 + 2, GetColor(255, 255, 255), TRUE);
+			DrawBox(S_UI.STallx, 405, S_UI.STallx + (int)c, 410, GetColor(0, 255, 0), TRUE);
+		}
+		break;
+	case(1):
+		break;
 	}
 	return;
 }
@@ -655,6 +714,7 @@ VOID MY_EVENT_PROC()
 }
 VOID MY_EVENT_DRAW()
 {
+	MY_PLAY_DRAW(); //プレイ画面を描画する
 	DrawGraph(0,GAME_HEIGHT-190, eventS.txtUI.handle, TRUE);
 	DrawFormatStringToHandle(50, GAME_HEIGHT - 120, GetColor(255, 255, 255),
 		tanu30.handle,eventS.str[eventS.strLnum],  TRUE);
@@ -718,7 +778,7 @@ VOID MY_BATTLE_PROC()
 					UI.UIx[UI.UItag] = UI.SpotUIx;
 				}
 				if (UI.UItag == 0) { Message = SELECT_NORMAL_AT; }
-				if (UI.UItag == 1) { Message = SKILL; }
+				if (UI.UItag == 1) { Message = SELECT_SKILL; }
 				if (UI.UItag == 2) { Message = GUARD; }
 				if (UI.UItag == 3) { Message = SELECT_ITEM; }
 				if (UI.UItag == 4) { Message = RUN; }
@@ -732,54 +792,26 @@ VOID MY_BATTLE_PROC()
 				switch (UI.UItag)
 				{
 				case 0://通常攻撃
-					switch(BEffectNormal.effectflg)
+					switch(BEnorAT.effectflg)
 					{ 
 					case 0://エフェクト描画箇所
-					Message = NORMAL_AT;
-					BEffectNormal.isView = TRUE;//バトルエフェクトを描画する
-					if (CheckSoundMem(BTSEnor.handle) == 0)
+					Message = NORMAL_AT;//メッセージを通常攻撃に
+					BEnorAT.isView = TRUE;//BEの描画flgをオン
+					BEnorAT.PLAY_SE();//SEを再生
+					if (Pstates.DMcalcflg == TRUE)//ダメージ計算を一度だけ行う
 					{
-						//BGMの音量を下げる
-						ChangeVolumeSoundMem(255 * 50 / 100, BTSEnor.handle);	//50%の音量にする
-						PlaySoundMem(BTSEnor.handle, DX_PLAYTYPE_BACK);
+						ENdefflg=Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
+						//ダメージを計算し、敵を倒したかどうかのフラグを格納(TRUE=int 1)
+						Pstates.DMcalcflg = FALSE;//ダメージ計算フラグを無効にする
 					}
-					if (BEffectNormal.Viewimage < BEffectNormal.image.Divmax)
-					{
-						WaitTimer(100);
-						BEffectNormal.Viewimage++;
-					}
-					else
-					{
-						BEffectNormal.isView = FALSE;
-						BEffectNormal.Count = 0;
-						BEffectNormal.Viewimage = 0;
-						damage_culcflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
-						BEffectNormal.effectflg = 1;
-						
-					}
+					BEnorAT.MOVE_VIEW_IMAGE();//画像のアニメーション
+					//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
 					break;
 					case 1:
-						if (Pstates.criflg == TRUE) {//クリティカル発生時
-							Message = CRITICAL;
-							if (UI.cricnt == 1)
-							{
-								WaitTimer(1000);
-								BEffectNormal.effectflg = 2;
-							}
-							UI.cricnt=1;
-						}
-						else{
-							Message = GIVE_DAMAGE;
-							if (UI.cricnt == 1)
-							{
-								WaitTimer(1000);
-								BEffectNormal.effectflg = 2;
-							}
-							UI.cricnt=1;
-						}
+						Pstates.CRI_MESSAGE(BEnorAT.effectflg, 2,Message);
 						break;
 					case 2:
-						if (damage_culcflg==1)//敵を倒したとき
+						if (ENdefflg==1)//敵を倒したとき
 						{
 							UI.Endefeatcnt++;
 							if (UI.Endefeatcnt < 60)
@@ -819,7 +851,8 @@ VOID MY_BATTLE_PROC()
 						}
 						else {
 							Pstates.criflg = FALSE;
-							BEffectNormal.effectflg = 0;
+							Pstates.DMcalcflg = TRUE;
+							BEnorAT.effectflg = 0;
 							UI.cricnt = 0;
 							Playerflag = 0;
 							Battleflag = 1;
@@ -881,7 +914,7 @@ VOID MY_BATTLE_PROC()
 							skillflag = 1;
 						}
 						break;
-					case 1:
+					case 1://スキル項目を華麗に移動させる酷く無駄なケース文
 						switch (UI.Skilltag)
 						{
 						case 0:
@@ -890,7 +923,7 @@ VOID MY_BATTLE_PROC()
 								UI.Iaiy2 -= UI.Iaiy2Move;
 							}
 							else {
-
+								skillflag = 2;
 							}
 							break;
 						case 1:
@@ -900,6 +933,7 @@ VOID MY_BATTLE_PROC()
 								UI.KiKonx -= UI.KiKonxMove;
 								UI.KiKony2 -= UI.KiKony2Move;
 							}
+							else { skillflag = 2; }
 							break;
 						case 2:
 							if (UI.SKILL_MOVE() == TRUE)
@@ -907,6 +941,7 @@ VOID MY_BATTLE_PROC()
 								UI.Keny -= UI.KenyMove;
 								UI.Keny2 -= UI.Keny2Move;
 							}
+							else { skillflag = 2; }
 							break;
 						case 3:
 							if (UI.SKILL_MOVE() == TRUE)
@@ -916,8 +951,16 @@ VOID MY_BATTLE_PROC()
 								UI.Magicy -= UI.MagicyMove;
 								UI.Magicy2 -= UI.Magicy2Move;
 							}
+							else { skillflag = 2; }
 							break;
 						}
+						break;
+					case 2:
+						//switch (UI.Skilltag)
+						//{
+						//case 0:
+						//	
+						//}
 						break;
 					}
 					break;
@@ -985,8 +1028,8 @@ VOID MY_BATTLE_PROC()
 			switch (Enemyflag)
 			{
 			case 0://通常攻撃
-				BEffectNormal.Count++;
-				if (CheckSoundMem(BTSEENnor.handle) == 0 && BEffectNormal.Count > 60)
+				BEnorAT.Count++;
+				if (CheckSoundMem(BTSEENnor.handle) == 0 && BEnorAT.Count > 60)
 				{
 					//BGMの音量を下げる
 					ChangeVolumeSoundMem(255 * 50 / 100, BTSEENnor.handle);	//50%の音量にする
@@ -999,14 +1042,14 @@ VOID MY_BATTLE_PROC()
 						}
 						GameScene = GAME_END_SCENE;
 					};
-					BEffectNormal.Count = 0;
+					BEnorAT.Count = 0;
 					Battleflag = 0;
 					Playerflag = 0;
 				}
 				break;
 			case 1:
-				BEffectNormal.Count++;
-				if (CheckSoundMem(BTSEENnor.handle) == 0 && BEffectNormal.Count > 60)
+				BEnorAT.Count++;
+				if (CheckSoundMem(BTSEENnor.handle) == 0 && BEnorAT.Count > 60)
 				{
 					//BGMの音量を下げる
 					ChangeVolumeSoundMem(255 * 50 / 100, BTSEENnor.handle);	//50%の音量にする
@@ -1018,12 +1061,11 @@ VOID MY_BATTLE_PROC()
 						}
 						GameScene = GAME_END_SCENE;
 					};
-					BEffectNormal.Count = 0;
+					BEnorAT.Count = 0;
 					Pstates.bufDF = Pstates.OldbufDF;
 					Pstates.bufMDF = Pstates.OldbufMDF;
 					Battleflag = 0;
 					Playerflag = 0;
-
 				}
 				break;
 			}
@@ -1063,13 +1105,15 @@ VOID MY_BATTLE_DRAW()
 		//メッセージボード
 		if (UI.EncntUIisView == TRUE) {
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 122);
-			DrawBox(0, 340, GAME_WIDTH,360,GetColor(200,200,200),TRUE);
+			//GetDrawFormatStringWidthToHandle(tanu30n.handle,
+			//	"%s", );
+			DrawBox(0, 340, GAME_WIDTH,GAME_HEIGHT,GetColor(200,200,200),TRUE);
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			DRAW_MESSAGE(Message);
 		}
 		else {
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 122);
-			DrawBox(0, 340, GAME_WIDTH, 360, GetColor(200, 200, 200), TRUE);
+			DrawBox(0, 340, GAME_WIDTH, 360, GetColor(124, 124, 124), TRUE);
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			DRAW_MESSAGE(Message);
 		}
@@ -1156,6 +1200,16 @@ VOID MY_BATTLE_DRAW()
 								DrawBox((int)UI.Iaix, (int)UI.Iaiy, (int)UI.Iaix2, (int)UI.Iaiy2, GetColor(170, 170, 170), TRUE);
 								DrawFormatStringToHandle(((int)UI.Iaix + (int)UI.Iaix2) / 2 - UI.SnameIAI / 2, 400
 									, GetColor(255, 255, 255), tanu30n.handle, "%s", Pstates.skillname);
+								//スキル名の描画
+								if (skillflag == 2)
+								{
+									DrawBox(UI.Iaiskillx-2, UI.Iaiskilly-2, UI.Iaiskillx2+2, UI.Iaiskilly2+2,
+										C.Black, TRUE);
+									DrawFormatStringToHandle(UI.Iaiskillx, UI.Iaiskilly
+										, GetColor(255, 255, 255), tanu20n.handle, "%s 威力:%3d 消費MP:%2d 初歩的な居合斬", Pstates.IAI.Name,
+										Pstates.IAI.hosei[0]*100,Pstates.IAI.mp[0]);
+								}
+
 								break;
 						case 1:
 								DrawBox((int)UI.KiKonx - 2, (int)UI.KiKony - 2, (int)UI.KiKonx2 + 2, (int)UI.KiKony2 + 2, GetColor(242, 242, 242), TRUE);
@@ -1187,10 +1241,10 @@ VOID MY_BATTLE_DRAW()
 		DrawFormatStringToHandle(350, 200
 			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Estates.HP, Estates.HPMAX);
 		DrawFormatStringToHandle(0, 0, GetColor(255, 255, 255), tanu20.handle, "%sは逃げ出した！", Pstates.Name);
-		if (BEffectNormal.isView == TRUE)//通常攻撃のエフェクト　
+		if (BEnorAT.isView == TRUE)//通常攻撃のエフェクト　
 		{
 			DrawGraph(enemy.x, enemy.y,
-				BEffectNormal.image.Divhandle[BEffectNormal.Viewimage], TRUE);
+				BEnorAT.image.Divhandle[BEnorAT.Viewimage], TRUE);
 		}
 
 		DrawStringToHandle(320, GAME_HEIGHT - 30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle); return;
@@ -1243,13 +1297,15 @@ VOID BATTLE_PROC_NEW(VOID)//バトルシーンを初期化する関数
 	skillflag = 0;
 	UI.Skilltag = 0;
 	UI.EncntUIisView = TRUE;
-	BEffectNormal.effectflg = 0;		//通常エフェクトの初期化
+	BEnorAT.effectflg = 0;				//通常エフェクトの初期化
 	Pstates.criflg = FALSE;				//クリティカルの発生判定を否定に戻す
+	Pstates.DMcalcflg = TRUE;			//ダメージ計算の判定を復活
 	UI.PlusEXPflg = TRUE;				//EXPの計算をできるように戻す
 	UI.LvUPflg = TRUE;					//レベルアップの判定をできるように戻す
+	NowLvUPflg = FALSE;					//↑と同じ
 	UI.Endefeatcnt = 0;					//敵を倒したときの処理のカウントを初期化する
 	Pstates.LvUPBUF_NEW();				//レベルアップの加算値の変数を初期化
-	UI.cricnt = 0;						//クリティカル判定のカウントを初期化
+	Pstates.cricnt = 0;					//クリティカル判定のカウントを初期化
 	UI.UIx[0] = UI.SpotUIx;
 	UI.SKILL_MOVE_NEW();
 	Message = ENCOUNT;
@@ -1278,7 +1334,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 		MAP_DIV_HEIGHT, IMAGE_PLAYER_INMAP) == -1) {
 		return FALSE;
 	}
-	if (BEffectNormal.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+	if (BEnorAT.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
 		DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, IMAGE_BATTLE_EFFECT_NORMAL_AT) == -1)
 	{
 		return FALSE;
@@ -1296,6 +1352,9 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	//ステータス画面
 	if (S_UI.charaimg.LOADING_IMAGE(IMAGE_STATES_CHARA) == -1) { return FALSE; }
 	if (S_UI.UIimg.LOADING_IMAGE(IMAGE_STATES_UI_ST, 0) == -1) { return FALSE; }
+	if (S_UI.UIimg.LOADING_IMAGE(IMAGE_STATES_UI_ITEM, 1) == -1) { return FALSE; }
+	if (S_UI.UIimg.LOADING_IMAGE(IMAGE_STATES_UI_SAVE, 2) == -1) { return FALSE; }
+	if (S_UI.UIimg.LOADING_IMAGE(IMAGE_STATES_UI_LOAD, 3) == -1) { return FALSE; }
 	if (S_UI.back.LOADING_IMAGE(IMAGE_STATES_BACK) == -1) { return FALSE; }
 	if (S_UI.back2.LOADING_IMAGE(IMAGE_STATES_BACK2) == -1) { return FALSE; }
 	//イベント画面
@@ -1324,6 +1383,7 @@ VOID LOADING_FULL_MAP()
 VOID CREATE_FULL_FONT()
 {
 	tanu20.CREATE_FONT(20, FONT_TANU_PATH, FONT_TANU_NAME);
+	tanu20n.CREATE_FONT_NONEDGE(20, FONT_TANU_PATH, FONT_TANU_NAME);
 	tanu30.CREATE_FONT(30, FONT_TANU_PATH, FONT_TANU_NAME);
 	tanu30n.CREATE_FONT_NONEDGE(30, FONT_TANU_PATH, FONT_TANU_NAME);
 	return;
@@ -1334,7 +1394,8 @@ BOOL LOADING_FULL_MUSIC()
 	if (TitleBGM.LOAD_MUSIC(TITLE_SCENE_MUSIC) == FALSE) { return -1; }
 	if (PlayBGM.LOAD_MUSIC(PLAY_SCENE_MUSIC) == FALSE) { return -1; }
 	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
-	if (BTSEnor.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }
+	if (BEnorAT.se.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }//通常攻撃のSE
+	if (BEhotal.se.LOAD_MUSIC(BATTLE_SE_HOTAL) == FALSE){return -1; }//スキル蛍火のSE
 	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_EN_NORMAL_AT) == FALSE) { return -1; }
 	if (OverBGM.LOAD_MUSIC(END_SCENE_MUSIC_OVER) == FALSE) { return -1; }
 	if (BTcar.LOAD_MUSIC(BATTLE_SE_CARSOL) == FALSE) { return -1; }
@@ -1374,7 +1435,7 @@ VOID DRAW_MESSAGE(int mestype)
 			"%sのこうげき！", Pstates.Name);
 		return;
 		break;
-	case SKILL:
+	case SELECT_SKILL:
 		DrawStringToHandle(0, 340, "スキルを選択して攻撃します", C.White, tanu20.handle);
 		return;
 		break;
@@ -1391,7 +1452,8 @@ VOID DRAW_MESSAGE(int mestype)
 		return;
 		break;
 	case CRITICAL:
-		DrawStringToHandle(0, 340, "急所を突いた！", C.White, tanu20.handle);
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"急所を突いた！ %sに%dのダメージ",Estates.Name,Pstates.damage);
 		return;
 		break;
 	case DEFEAT_EN:
@@ -1400,13 +1462,13 @@ VOID DRAW_MESSAGE(int mestype)
 		return;
 		break;
 	case GET_EXP:
-		DrawFormatStringToHandle(0, 340, GetColor(255,255,255), tanu20.handle,
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
 			"%d経験値を獲得", Estates.EXP);
 		return;
 		break;
 	case GIVE_DAMAGE:
 		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
-			"%dダメージを与えた！", Pstates.damage);
+			"%sに%dのダメージ", Estates.Name,Pstates.damage);
 		return;
 		break;
 	case Levelup:
