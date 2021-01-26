@@ -8,6 +8,8 @@ class BATTLE_EFFECT//バトルエフェクトを管理するクラス
 public:
 	LOAD_DIV_IMAGE image;
 	MUSIC se;
+	char sepath[MAX_PATH];
+	char imgpath[MAX_PATH];
 	BOOL isView = FALSE;
 	int CountMax = 5;
 	int Count = 0;
@@ -15,6 +17,7 @@ public:
 	int effectflg = 0;
 	VOID PLAY_SE();//音を再生する
 	VOID MOVE_VIEW_IMAGE();//描画アニメーション
+	VOID LOADING_PATH(int);
 };
 
 enum BATTLE_MESSAGE
@@ -30,7 +33,16 @@ enum BATTLE_MESSAGE
 	DEFEAT_EN,
 	GET_EXP,
 	GIVE_DAMAGE,
-	Levelup
+	Levelup,
+	NOT_ENOUGH_MP,
+	SKILL_IAI_WAZANAME,
+	SKILL_KIKON_WAZANAME,
+	SKILL_KEN_WAZANAME,
+	SKILL_MAGIC_WAZANAME,
+	SKILL_IAI_WAZA_AT,
+	SKILL_KIKON_WAZA_AT,
+	SKILL_KEN_WAZA_AT,
+	SKILL_MAGIC_WAZA_AT
 };
 
 VOID BATTLE_EFFECT::PLAY_SE()
@@ -60,4 +72,14 @@ VOID BATTLE_EFFECT::MOVE_VIEW_IMAGE()
 	return;
 }
 
-
+VOID BATTLE_EFFECT::LOADING_PATH(int skillNum)
+{
+	switch (skillNum)
+	{
+	case 0:
+		strcpy(this->sepath, BATTLE_SE_SKILL_MUTUKI);
+		strcpy(this->imgpath, IMAGE_BE_SKILL_IAI_MUTUKI);
+		break;
+	}
+	return;
+}

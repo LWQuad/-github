@@ -1,6 +1,12 @@
 #include "DxLib.h"
 #include "map.hpp"
 
+VOID MAPINPUT::RESIZE(int TATE_MAX, int YOKO_MAX)
+{
+	kind.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	return;
+}
+
 BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ğ“Ç‚İ‚ŞŠÖ”(ƒ}ƒbƒvƒtƒ@ƒCƒ‹ƒpƒX)
 {
 	ifstream ifs(maptxt);
@@ -19,6 +25,8 @@ BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ğ“Ç‚İ‚ŞŠÖ”(ƒ}ƒbƒ
 VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
 //ƒ}ƒbƒvƒf[ƒ^‚ÌÀ•W‚ğİ’è‚·‚éŠÖ”(ƒ}ƒbƒvƒ`ƒbƒv‚Ì•Aƒ}ƒbƒvƒ`ƒbƒv‚Ì‚‚³)
 {
+	
+
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
 	{
 		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
@@ -36,7 +44,7 @@ VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
 			//ƒ}ƒbƒv‚ÌÀ•W‚ğİ’è
 			this->x[tate][yoko] =(yoko * this->width[tate][yoko]);
 			this->y[tate][yoko] =(tate * this->height[tate][yoko]);
-			this->x[tate][yoko] -= 15 * chipwidth;
+			this->x[tate][yoko] -= 10 * chipwidth;
 			this->y[tate][yoko] -= 20 * chipheight;
 			this->isVIEW = FALSE;
 		}

@@ -39,6 +39,7 @@ using namespace std;
 #define IMAGE_EVENT_TXTUIBACK TEXT(".\\IMAGEs\\EVENT\\frame_message.png")
 //バトルエフェクト
 #define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\btleffectNormal.png")
+#define IMAGE_BE_SKILL_IAI_MUTUKI TEXT(".\\IMAGEs\\640×480\\btleffectIAI_mutuki.png")
 
 class LOAD_SINGLE_IMAGE //画像一枚を読み込むクラス
 {

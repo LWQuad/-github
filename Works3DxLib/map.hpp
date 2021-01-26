@@ -6,7 +6,7 @@
 #include "windowsystem.h"
 #include "DxLib.h"
 #include <string>
-
+using namespace std;
 
 #define GAME_MAP_PATH1 TEXT(".\\IMAGEs\\MAPIMAGE\\mapchip1.png")
 #define GAME_MAP1_UNDER_TXT TEXT(".\\MAP\\map1_マップ下.txt")
@@ -14,6 +14,8 @@
 #define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.txt")
 #define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.txt")
 #define GAME_MAP1_ENEMYMAP TEXT(".\\MAP\\map1_敵の出現マップ.txt")
+
+#define MAP_MURA_UNDER_TXT TEXT("")
 
 
 #define MAP_DIV_WIDTH		32	//画像を分割する幅サイズ
@@ -48,7 +50,10 @@ public:
 	int map[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
 	BOOL LOADING_MAP(const char*);//マップを読み込む（マップのパス）
 	BOOL isVIEW;//表示できるかを示す
+	VOID RESIZE(int, int);
     void MAPSETTING(int,int);//マップの座標を初期セットする（マップチップの幅、高さ）
+
+	vector<vector<int>> kind;
 
 };
 

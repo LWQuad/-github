@@ -1,6 +1,9 @@
 #pragma once
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <string>
+
 #include "BATTLEEFFECT.hpp"
 #define PLAYER_STATES TEXT(".\\STATES\\PlayerStates.csv")
 
@@ -8,7 +11,10 @@
 #define PLAYER_SAVE_SLOT1 TEXT(".\\SAVEDATA\\SaveDate_slot1.csv")
 #define PLAYER_SAVE_SLOT2 TEXT(".\\SAVEDATA\\SaveDate_slot2.csv")
 
+
+
 #define PLAYER_SKILL_IAI_DATA TEXT(".\\SKILLS\\IAIskill.txt")
+#define PLAYER_SKILL_KIKON_DATA TEXT(".\\SKILLS\\KIKONskill.txt")
 enum SKILL_KOUMOKU
 {
 	sHOSEI,
@@ -20,16 +26,21 @@ class Skill_Management//スキルを管理する関数
 public:
 	//一旦スキルをインプットするバフ変数
 	char bufName[10][15] = { "\0" };
+	char bufexpl[10][100] = { "\0" };
 	float bufhosei[10] = { 0 };
 	float bufcri[10] = { 0 };
 	int bufmp[10] = { 0 };
 	int flg[10] = { 0 };
 	//スキルを表示できるようにする実態変数
 	char Name[10][15] = { "\0" };
+	char expl[10][100] = { "\0" };
 	float hosei[10] = { 0 };
 	float cri[10] = { 0 };
 	int mp[10] = { 0 };
 
+	int Viewtag = 0;
+
+	int isView = 0;
 	BOOL SAVE_SKILL(const char*);//スキルのセーブ
 	BOOL INPUT_SKILL(const char*);//スキルのロード
 	BOOL REGISTER_SKILL();//スキルを登録する
@@ -39,8 +50,8 @@ BOOL Skill_Management::INPUT_SKILL(const char* skillpath)//スキルのロード
 {
 	int ret, n = 0;
 	FILE* fp = fopen(skillpath, "r");
-	while (ret = fscanf(fp, "%s,%f,%f,%d,%d,",
-		&bufName[n], &bufhosei[n], &bufcri[n], &bufmp[n], &flg[n]) != EOF) {
+	while (ret = fscanf(fp, "%s%f%f%d%d%s",
+		bufName[n], &bufhosei[n], &bufcri[n], &bufmp[n], &flg[n],bufexpl[n]) != EOF) {
 		n++;
 	};
 	if (ret == -1)
@@ -50,6 +61,24 @@ BOOL Skill_Management::INPUT_SKILL(const char* skillpath)//スキルのロード
 		return FALSE;
 	}
 	fclose(fp);
+	return TRUE;
+}
+
+BOOL Skill_Management::REGISTER_SKILL()//習得済みの技を登録する関数
+{
+	int N = 0;
+	for (int n = 0; n < 10; n++)
+	{
+		if (flg[n] == 1)//技の習得フラグがTRUEの時
+		{
+			strcpy(Name[N], bufName[n]);
+			strcpy(expl[N], bufexpl[n]);
+			hosei[N] = bufhosei[n];
+			cri[N] = bufcri[n];
+			mp[N] = bufmp[n];
+			N++;
+		}
+	}
 	return TRUE;
 }
 
@@ -105,7 +134,7 @@ public:
 
 
 	//技用の関数
-	Skill_Management IAI;
+	Skill_Management IAI, KIKON, KEN,MAGIC;
 
 	BOOL SKILL_IAI_MUTUKI(int, int&, int);
 
@@ -124,26 +153,9 @@ public:
 	BOOL DMcalcflg = TRUE;
 	int DAMAGE_CALC(int, int&);//ダメージ計算の関数(相手の防御力,相手のHP)
 	int SKILL_IAI_CALC(int, int&,int);
-	int KIKON_HOTAL_CALC(int, int&);
+	int SKILL_KIKON_CALC(int, int&,int);
 	VOID CRI_MESSAGE(int&, int,int&);//クリティカルの表示処理(変更する変数,変更するシーン)
 };
-
-BOOL Skill_Management::REGISTER_SKILL()//習得済みの技を登録する関数
-{
-	int N = 0;
-	for (int n = 0; n < 10; n++)
-	{
-		if (flg[n] == 1)//技の習得フラグがTRUEの時
-		{
-			strcpy(Name[N], bufName[n]);
-			hosei[N] = bufhosei[n];
-			cri[N] = bufcri[n];
-			mp[N] = bufmp[n];
-			N++;
-		}
-	}
-	return TRUE;
-}
 
 BOOL PlayerStates::INPUT_STATES(const char* statespath)//ステータスのロード
 {
@@ -212,7 +224,7 @@ void PlayerStates::RUN_AWAY(int enemyagi)
 	return;
 }
 
-BOOL PlayerStates::SKILL_IAI_CALC(int bougyo,int& hp,int skillnum)
+BOOL PlayerStates::SKILL_IAI_CALC(int bougyo,int& hp,int skillnum)//居合技のダメージ計算式
 {
 	int cri = GetRand(criRan);
 	damage = int(((this->AT * AT) / (this->AT + bougyo)) * IAI.hosei[skillnum]);
@@ -222,6 +234,29 @@ BOOL PlayerStates::SKILL_IAI_CALC(int bougyo,int& hp,int skillnum)
 		damage = damage * 1.5;
 		HP -= damage;
 	}
+	else
+	{
+		HP -= damage;
+	}
+	if (HP <= 0)//HPが０以下の時
+	{
+		HP = 0;
+		return 1;
+	}
+	return 0;//それ以外の時
+}
+
+BOOL PlayerStates::SKILL_KIKON_CALC(int enMDF, int& hp, int skillnum)
+{
+	int cri = GetRand(criRan);
+	damage = int(((this->MAT * MAT) / (this->MAT + enMDF)) * KIKON.hosei[skillnum]);
+	if (cri < this->critical)//クリティカル率は通常
+	{
+		criflg = TRUE;
+		damage = damage * 1.5;
+		HP -= damage;
+	}
+
 	else
 	{
 		HP -= damage;

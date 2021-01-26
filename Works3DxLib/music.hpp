@@ -11,6 +11,8 @@
 #define BATTLE_SE_CARSOL TEXT(".\\MUSIC\\SE\\カーソル移動1.mp3")
 #define BATTLE_SE_ENTER TEXT(".\\MUSIC\\SE\\和太鼓でドン.mp3")
 #define BATTLE_SE_HOTAL TEXT(".\\MUSIC\\SE\\火炎魔法1.mp3")
+
+#define BATTLE_SE_SKILL_MUTUKI TEXT(".\\MUSIC\\SE\\火炎魔法1.mp3")
 class MUSIC
 {
 public:
@@ -19,5 +21,4 @@ public:
 	int handle;
 
 	BOOL LOAD_MUSIC(const char*);//音楽をロードする(音楽のパス)
-
 };

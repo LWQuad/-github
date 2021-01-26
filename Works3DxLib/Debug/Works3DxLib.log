@@ -1,17 +1,21 @@
 ﻿  main.cpp
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(41,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(42,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(96,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(102,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(138,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(151,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(152,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(168,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(182,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(222,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\Battlesystem.hpp(16,5): warning C4552: '-': 式の結果が使用されていません
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(73,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(74,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(52,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(53,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(74,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(75,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(125,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(131,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(163,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(164,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(180,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(194,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(234,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(256,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): warning C4474: 'fscanf': 書式文字列に渡された引数の数が多すぎます
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): message : プレースホルダーとそのパラメーターには 3 の可変個引数が必要ですが、4 が指定されています。
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(29,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(30,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1584,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe

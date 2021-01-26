@@ -71,9 +71,6 @@
     <ClInclude Include="playerstatas.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Battlesystem.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="BATTLEEFFECT.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

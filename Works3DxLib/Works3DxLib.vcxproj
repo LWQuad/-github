@@ -162,7 +162,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BATTLEEFFECT.hpp" />
-    <ClInclude Include="Battlesystem.hpp" />
     <ClInclude Include="battleUI.hpp" />
     <ClInclude Include="enemystatas.hpp" />
     <ClInclude Include="event.hpp" />

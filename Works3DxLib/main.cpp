@@ -8,7 +8,6 @@
 #include "battleUI.hpp"
 #include "enemystatas.hpp"
 #include "playerstatas.hpp"
-#include "Battlesystem.hpp"
 #include "BATTLEEFFECT.hpp"
 #include "Item.hpp"
 #include "music.hpp"
@@ -72,6 +71,7 @@ BOOL LOADING_FULL_IMAGE(VOID);	//画像全てをロードする関数
 VOID LOADING_FULL_MAP(VOID);	//マップを読み込む関数
 VOID CREATE_FULL_FONT(VOID);	//フォントを作成する関数
 BOOL LOADING_FULL_MUSIC(VOID);	//音楽を読み込む関数
+BOOL LOADING_SKILL_IMGandSE(int,int); //スキル使用時にSEと画像を読み込む
 VOID INPUTBTLSTATES_BUF(VOID);	//1戦闘用にステータスを退避させる関数
 VOID PLAY_CARSOL_SOUND(VOID);	//カーソル音を鳴らす(時間短縮用)
 VOID PLAY_ENTER_SOUND(int);	//決定音を鳴らす(時間短縮用)(再生タイプを設定)
@@ -86,7 +86,7 @@ LOAD_SINGLE_IMAGE enemy;
 LOAD_SINGLE_IMAGE btbk;
 LOAD_SINGLE_IMAGE UIback;
 BATTLE_EFFECT BEnorAT;
-BATTLE_EFFECT BEhotal;
+BATTLE_EFFECT BEIAI, BEKIKON, BEMAGIC, BEKEN;
 CREATE_FONTHANDLE tanu20,tanu20n,tanu30,tanu30n;
 MAP_DIV divmap;//マップチップ分割用クラス
 MAPINPUT MAPUND;//下のマップ
@@ -96,7 +96,6 @@ MAP_HITBOX MAPHIT;//当たり判定のマップ
 MAP_ENEMY MAPEN;//敵の出現マップ
 //ENEMY Senemy;
 CHARA player;
-BATTLE_SYSTEM Bsys;
 BATTLE_UI UI;
 STATES_UI S_UI;
 START_UI F_UI;
@@ -115,6 +114,7 @@ int GameScene;//ゲームシーンを管理する
 int Message;//メッセージを管理
 //攻撃速度の判定をするか否かの関数
 int Battleflag = 0;
+int BEskillflg = 0;
 //0の時自分が攻撃　１の時敵が攻撃
 int Playerflag = 0;
 //行動後の処理
@@ -148,20 +148,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
 	LOADING_FULL_MAP();				//マップを読み込む関数
 	CREATE_FULL_FONT();				//フォントを作成する関数
-	/*item.INPUTSTATES_SYUDOU(20, "やくそう", 0);*/
 
-	GameScene = GAME_START_SCENE;	//ゲームシーンはスタート画面から
+	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
 
 	eventS.INPUTTXT(EVENT_TXT);
 	//start位置の設定
-	player.image.x = divmap.width*10; player.image.y =divmap.height*11 ;
+	player.image.x = divmap.width*15; player.image.y =divmap.height*11 ;
 	player.Nowhandle = player.image.Divhandle[0];
 	UI.UIx[0] = UI.SpotUIx;
 	Pstates.INPUT_STATES(PLAYER_STATES);
 	Pstates.IAI.INPUT_SKILL(PLAYER_SKILL_IAI_DATA);
-
+	Pstates.IAI.REGISTER_SKILL();
 	//無限ループ
 	while (TRUE)
 	{
@@ -304,10 +303,10 @@ VOID MY_PLAY_PROC()
 		GameScene = GAME_EVENT_SCENE;
 	}
 	//プレイヤーの当たり判定を設定
-	player.coll.left = player.image.x + 5;
-	player.coll.top = player.image.y + 5;
-	player.coll.right = player.image.x + player.image.width - 5;
-	player.coll.bottom = player.image.y + player.image.height - 5;
+	player.coll.left = player.image.x+5;
+	player.coll.top = player.image.y+5;
+	player.coll.right = player.image.x + player.image.width-5;
+	player.coll.bottom = player.image.y + player.image.height-5;
 
 	//移動前のプレイヤーの場所を取得
 	player.OldX = player.image.x;
@@ -808,55 +807,7 @@ VOID MY_BATTLE_PROC()
 					//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
 					break;
 					case 1:
-						Pstates.CRI_MESSAGE(BEnorAT.effectflg, 2,Message);
-						break;
-					case 2:
-						if (ENdefflg==1)//敵を倒したとき
-						{
-							UI.Endefeatcnt++;
-							if (UI.Endefeatcnt < 60)
-							{
-								Message = DEFEAT_EN;
-							}
-							else if (UI.Endefeatcnt < 120)
-							{
-								Message = GET_EXP;
-								if(UI.PlusEXPflg==TRUE)//経験値を一度だけ加算する
-								{
-									Pstates.EXP += Estates.EXP;
-									UI.PlusEXPflg = FALSE;
-									if (Pstates.EXP >= Pstates.EXPMAX)
-									{//経験値の最大値を超えたときレベルアップ関数を動かす
-										NowLvUPflg = Pstates.LEVELUP();
-									}
-								}
-							}
-							if (120 < UI.Endefeatcnt && NowLvUPflg == TRUE)
-							{//レベルアップ時の処理 
-								Message = Levelup;
-								if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
-								{
-									Playendflag = 0;
-									Playerflag = 2;
-								}
-							}
-							else
-							{
-								if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
-								{
-									Playendflag = 0;
-									Playerflag = 2;
-								}
-							}
-						}
-						else {
-							Pstates.criflg = FALSE;
-							Pstates.DMcalcflg = TRUE;
-							BEnorAT.effectflg = 0;
-							UI.cricnt = 0;
-							Playerflag = 0;
-							Battleflag = 1;
-						}
+						Pstates.CRI_MESSAGE(Playerflag, 3,Message);
 						break;
 					}
 					//HPを判定する関数
@@ -956,12 +907,244 @@ VOID MY_BATTLE_PROC()
 						}
 						break;
 					case 2:
-						//switch (UI.Skilltag)
-						//{
-						//case 0:
-						//	
-						//}
+						switch (UI.Skilltag)
+						{
+						case 0:
+							Message = SKILL_IAI_WAZANAME;
+							UI.ENTER_COUNT_SKILL();
+							if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)//上を押したとき
+							{
+								if (Pstates.IAI.Viewtag==0) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.IAI.Viewtag -= 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)//下を押したとき
+							{
+								if (Pstates.IAI.flg[Pstates.IAI.Viewtag+1]==FALSE) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.IAI.Viewtag += 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.ENTER_COUNT_SKILL() == TRUE)//Enterを押したとき
+							{
+								if (Pstates.MP < Pstates.IAI.mp[Pstates.IAI.Viewtag])
+								{
+									Message = NOT_ENOUGH_MP;
+								}
+								else {
+									UI.Scount = 0;
+									PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+									LOADING_SKILL_IMGandSE(Pstates.IAI.Viewtag,UI.Skilltag);
+									//使用するスキルの画像とイメージを取り込む
+									skillflag = 3;
+								}
+							}
+							break;
+						case 1:
+							Message = SKILL_KIKON_WAZANAME;
+							UI.ENTER_COUNT_SKILL();
+							if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)//上を押したとき
+							{
+								if (Pstates.KIKON.Viewtag == 0) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.KIKON.Viewtag -= 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)//下を押したとき
+							{
+								if (Pstates.KIKON.flg[Pstates.KIKON.Viewtag + 1] == FALSE) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.KIKON.Viewtag += 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.ENTER_COUNT_SKILL() == TRUE)//Enterを押したとき
+							{
+								if (Pstates.MP < Pstates.KIKON.mp[Pstates.KIKON.Viewtag])
+								{
+									Message = NOT_ENOUGH_MP;
+								}
+								else {
+									UI.Scount = 0;
+									PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+									LOADING_SKILL_IMGandSE(Pstates.KIKON.Viewtag, UI.Skilltag);
+									//使用するスキルの画像とイメージを取り込む
+									skillflag = 3;
+								}
+							}
+							break;
+						case 2:
+							Message = SKILL_KEN_WAZANAME;
+							UI.ENTER_COUNT_SKILL();
+							if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)//上を押したとき
+							{
+								if (Pstates.KEN.Viewtag == 0) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.KEN.Viewtag -= 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)//下を押したとき
+							{
+								if (Pstates.KEN.flg[Pstates.KEN.Viewtag + 1] == FALSE) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.KEN.Viewtag += 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.ENTER_COUNT_SKILL() == TRUE)//Enterを押したとき
+							{
+								if (Pstates.MP < Pstates.KEN.mp[Pstates.KEN.Viewtag])
+								{
+									Message = NOT_ENOUGH_MP;
+								}
+								else {
+									UI.Scount = 0;
+									PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+									LOADING_SKILL_IMGandSE(Pstates.KEN.Viewtag, UI.Skilltag);
+									//使用するスキルの画像とイメージを取り込む
+									skillflag = 3;
+								}
+							}
+							break;
+						case 3:
+							Message = SKILL_MAGIC_WAZANAME;
+							UI.ENTER_COUNT_SKILL();
+							if ((CheckHitKey(KEY_INPUT_UP) == TRUE) && UI.CHANGE_COUNT() == TRUE)//上を押したとき
+							{
+								if (Pstates.MAGIC.Viewtag == 0) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.MAGIC.Viewtag -= 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_DOWN) == TRUE) && UI.CHANGE_COUNT() == TRUE)//下を押したとき
+							{
+								if (Pstates.MAGIC.flg[Pstates.MAGIC.Viewtag + 1] == FALSE) {}
+								else {
+									PLAY_CARSOL_SOUND();
+									UI.count = 0;
+									Pstates.MAGIC.Viewtag += 1;
+								}
+							}
+							if ((CheckHitKey(KEY_INPUT_RETURN) == TRUE) && UI.ENTER_COUNT_SKILL() == TRUE)//Enterを押したとき
+							{
+								if (Pstates.MP < Pstates.MAGIC.mp[Pstates.MAGIC.Viewtag])
+								{
+									Message = NOT_ENOUGH_MP;
+								}
+								else {
+									UI.Scount = 0;
+									PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+									LOADING_SKILL_IMGandSE(Pstates.MAGIC.Viewtag, UI.Skilltag);
+									//使用するスキルの画像とイメージを取り込む
+									skillflag = 3;
+								}
+							}
+							break;
+						}
 						break;
+					case 3:
+						switch (UI.Skilltag)
+						{
+						case 0://エフェクト描画箇所
+							switch (BEIAI.effectflg)
+							{
+							case 0:
+								Message = SKILL_IAI_WAZA_AT;//メッセージを通常攻撃に
+								BEIAI.isView = TRUE;//BEの描画flgをオン
+								BEIAI.PLAY_SE();//SEを再生
+								if (Pstates.DMcalcflg == TRUE)//ダメージ計算を一度だけ行う
+								{
+									ENdefflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
+									//ダメージを計算し、敵を倒したかどうかのフラグを格納(TRUE=int 1)
+									Pstates.DMcalcflg = FALSE;//ダメージ計算フラグを無効にする
+								}
+								BEIAI.MOVE_VIEW_IMAGE();//画像のアニメーション
+								//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
+								break;
+							case 1:
+								Pstates.CRI_MESSAGE(Playerflag, 3, Message);
+								break;
+							}
+							break;
+						case 1://エフェクト描画箇所
+							switch (BEKIKON.effectflg)
+							{
+							case 0:
+								Message = SKILL_KIKON_WAZA_AT;//メッセージを通常攻撃に
+								BEKIKON.isView = TRUE;//BEの描画flgをオン
+								BEKIKON.PLAY_SE();//SEを再生
+								if (Pstates.DMcalcflg == TRUE)//ダメージ計算を一度だけ行う
+								{
+									ENdefflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
+									//ダメージを計算し、敵を倒したかどうかのフラグを格納(TRUE=int 1)
+									Pstates.DMcalcflg = FALSE;//ダメージ計算フラグを無効にする
+								}
+								BEKIKON.MOVE_VIEW_IMAGE();//画像のアニメーション
+								//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
+								break;
+							case 1:
+								Pstates.CRI_MESSAGE(Playerflag, 3, Message);
+								break;
+							}
+							break;
+						case 2://エフェクト描画箇所
+							switch (BEKEN.effectflg)
+							{
+							case 0:
+								Message = SKILL_KEN_WAZA_AT;//メッセージを通常攻撃に
+								BEKEN.isView = TRUE;//BEの描画flgをオン
+								BEKEN.PLAY_SE();//SEを再生
+								if (Pstates.DMcalcflg == TRUE)//ダメージ計算を一度だけ行う
+								{
+									ENdefflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
+									//ダメージを計算し、敵を倒したかどうかのフラグを格納(TRUE=int 1)
+									Pstates.DMcalcflg = FALSE;//ダメージ計算フラグを無効にする
+								}
+								BEKEN.MOVE_VIEW_IMAGE();//画像のアニメーション
+								//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
+								break;
+							case 1:
+								Pstates.CRI_MESSAGE(Playerflag, 3, Message);
+								break;
+							}
+							break;
+						case 3://エフェクト描画箇所
+							switch (BEMAGIC.effectflg)
+							{
+							case 0:
+								Message = SKILL_MAGIC_WAZA_AT;//メッセージを通常攻撃に
+								BEMAGIC.isView = TRUE;//BEの描画flgをオン
+								BEMAGIC.PLAY_SE();//SEを再生
+								if (Pstates.DMcalcflg == TRUE)//ダメージ計算を一度だけ行う
+								{
+									ENdefflg = Pstates.DAMAGE_CALC(Estates.DF, Estates.HP);
+									//ダメージを計算し、敵を倒したかどうかのフラグを格納(TRUE=int 1)
+									Pstates.DMcalcflg = FALSE;//ダメージ計算フラグを無効にする
+								}
+								BEMAGIC.MOVE_VIEW_IMAGE();//画像のアニメーション
+								//終了時に次のスイッチに移行＆エフェクト描画変数をすべて初期化
+								break;
+							case 1:
+								Pstates.CRI_MESSAGE(Playerflag, 3, Message);
+								break;
+							}
+							break;
+						}
+						break;
+
 					}
 					break;
 				case 2://防御
@@ -1020,7 +1203,61 @@ VOID MY_BATTLE_PROC()
 						GameScene = GAME_PLAY_SCENE;
 					}
 				}
-			
+				break;
+			case 3://攻撃時の処理
+				if (ENdefflg == 1)//敵を倒したとき
+				{
+					UI.Endefeatcnt++;
+					if (UI.Endefeatcnt < 60)
+					{
+						Message = DEFEAT_EN;
+					}
+					else if (UI.Endefeatcnt < 120)
+					{
+						Message = GET_EXP;
+						if (UI.PlusEXPflg == TRUE)//経験値を一度だけ加算する
+						{
+							Pstates.EXP += Estates.EXP;
+							UI.PlusEXPflg = FALSE;
+							if (Pstates.EXP >= Pstates.EXPMAX)
+							{//経験値の最大値を超えたときレベルアップ関数を動かす
+								NowLvUPflg = Pstates.LEVELUP();
+							}
+						}
+					}
+					if (120 < UI.Endefeatcnt && NowLvUPflg == TRUE)
+					{//レベルアップ時の処理 
+						Message = Levelup;
+						if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+						{
+							Playendflag = 0;
+							Playerflag = 2;
+						}
+					}
+					else
+					{
+						if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
+						{
+							Playendflag = 0;
+							Playerflag = 2;
+						}
+					}
+				}
+				else {
+					Pstates.criflg = FALSE;
+					Pstates.DMcalcflg = TRUE;
+					BEnorAT.effectflg = 0;
+					BEIAI.effectflg = 0;
+					BEKEN.effectflg = 0;
+					BEMAGIC.effectflg = 0;
+					BEKIKON.effectflg = 0;
+					skillflag = 0;
+					UI.Skilltag = 0;
+					UI.cricnt = 0;
+					Playerflag = 0;
+					Battleflag = 1;
+					UI.SKILL_MOVE_NEW();
+				}
 				break;
 			}
 			break;
@@ -1098,8 +1335,6 @@ VOID MY_BATTLE_DRAW()
 		DrawGraph(UI.UIx[3], 500, UI.image.UIhandle[3], TRUE);//アイテム
 		DrawGraph(UI.UIx[4], 540, UI.image.UIhandle[4], TRUE);//逃げる
 
-		
-
 		DrawBox(0, GAME_HEIGHT - 40, GAME_WIDTH, GAME_HEIGHT, GetColor(125, 125, 0), TRUE);
 		
 		//メッセージボード
@@ -1130,7 +1365,7 @@ VOID MY_BATTLE_DRAW()
 			DrawBox(350 - 2, 425 - 2, 350 + 100 + 2, 445 + 2, GetColor(242, 242, 242), TRUE);
 			DrawBox(350, 425, 350 + (int)b, 445, GetColor(30, 144, 255), TRUE);
 			DrawFormatStringToHandle(350, 425
-				, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.MP, Pstates.MPMAX);
+				, C.White, tanu20.handle, "%d/%d", Pstates.MP, Pstates.MPMAX);
 			/*&& UI.UItag == 1)*/
 			switch (Playerflag)
 			{
@@ -1200,16 +1435,6 @@ VOID MY_BATTLE_DRAW()
 								DrawBox((int)UI.Iaix, (int)UI.Iaiy, (int)UI.Iaix2, (int)UI.Iaiy2, GetColor(170, 170, 170), TRUE);
 								DrawFormatStringToHandle(((int)UI.Iaix + (int)UI.Iaix2) / 2 - UI.SnameIAI / 2, 400
 									, GetColor(255, 255, 255), tanu30n.handle, "%s", Pstates.skillname);
-								//スキル名の描画
-								if (skillflag == 2)
-								{
-									DrawBox(UI.Iaiskillx-2, UI.Iaiskilly-2, UI.Iaiskillx2+2, UI.Iaiskilly2+2,
-										C.Black, TRUE);
-									DrawFormatStringToHandle(UI.Iaiskillx, UI.Iaiskilly
-										, GetColor(255, 255, 255), tanu20n.handle, "%s 威力:%3d 消費MP:%2d 初歩的な居合斬", Pstates.IAI.Name,
-										Pstates.IAI.hosei[0]*100,Pstates.IAI.mp[0]);
-								}
-
 								break;
 						case 1:
 								DrawBox((int)UI.KiKonx - 2, (int)UI.KiKony - 2, (int)UI.KiKonx2 + 2, (int)UI.KiKony2 + 2, GetColor(242, 242, 242), TRUE);
@@ -1231,6 +1456,35 @@ VOID MY_BATTLE_DRAW()
 								break;
 						}
 						break;
+					case 2:
+						switch (UI.Skilltag)
+						{
+						case 0:
+							DrawBox((int)UI.Iaix - 2, (int)UI.Iaiy - 2, (int)UI.Iaix2 + 2, (int)UI.Iaiy2 + 2, GetColor(242, 242, 242), TRUE);
+							DrawBox((int)UI.Iaix, (int)UI.Iaiy, (int)UI.Iaix2, (int)UI.Iaiy2, GetColor(170, 170, 170), TRUE);
+							DrawFormatStringToHandle(((int)UI.Iaix + (int)UI.Iaix2) / 2 - UI.SnameIAI / 2, 400
+								, GetColor(255, 255, 255), tanu30n.handle, "%s", Pstates.skillname);
+							for(int i=0;i<10;i++)
+							{
+								if (Pstates.IAI.flg[Pstates.IAI.isView] == 1)
+								{
+									DrawBox(UI.Iaiskillx - 2, UI.Iaiskilly - 2, UI.Iaiskillx2 + 2, UI.Iaiskilly2 + 2,
+										C.Black, TRUE);
+									DrawFormatStringToHandle(UI.Iaiskillx, UI.Iaiskilly
+										, GetColor(255, 255, 255), tanu20n.handle, "%4s 威力:%3d 消費MP:%2d %s",
+										Pstates.IAI.Name[Pstates.IAI.isView]
+										, int(Pstates.IAI.hosei[Pstates.IAI.isView] * 100), Pstates.IAI.mp[Pstates.IAI.isView],
+										Pstates.IAI.expl[Pstates.IAI.isView]);
+									Pstates.IAI.isView++, UI.Iaiskilly += 30, UI.Iaiskilly2 += 30;
+								}
+							}
+							Pstates.IAI.isView=0, UI.Iaiskilly = 435, UI.Iaiskilly2 = 460;
+							DrawBox(UI.Iaiskillx - 2, UI.Iaiskilly+(Pstates.IAI.Viewtag*30) - 2,
+								UI.Iaiskillx2 + 2, UI.Iaiskilly2+(Pstates.IAI.Viewtag * 30) + 2,
+								C.White, FALSE);//選択枠を表示する
+
+							break;
+						}
 					}
 					break;
 				}
@@ -1240,11 +1494,30 @@ VOID MY_BATTLE_DRAW()
 		DrawBox(350, 200, 350 + (int)c, 220, GetColor(0, 255, 0), TRUE);
 		DrawFormatStringToHandle(350, 200
 			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Estates.HP, Estates.HPMAX);
-		DrawFormatStringToHandle(0, 0, GetColor(255, 255, 255), tanu20.handle, "%sは逃げ出した！", Pstates.Name);
 		if (BEnorAT.isView == TRUE)//通常攻撃のエフェクト　
 		{
 			DrawGraph(enemy.x, enemy.y,
 				BEnorAT.image.Divhandle[BEnorAT.Viewimage], TRUE);
+		}
+		if (BEIAI.isView == TRUE)//スキルのエフェクト
+		{
+			DrawGraph(enemy.x, enemy.y,
+				BEIAI.image.Divhandle[BEIAI.Viewimage], TRUE);
+		}
+		if (BEKIKON.isView == TRUE)//スキルのエフェクト
+		{
+			DrawGraph(enemy.x, enemy.y,
+				BEKIKON.image.Divhandle[BEKIKON.Viewimage], TRUE);
+		}
+		if (BEKEN.isView == TRUE)//スキルのエフェクト
+		{
+			DrawGraph(enemy.x, enemy.y,
+				BEKEN.image.Divhandle[BEKEN.Viewimage], TRUE);
+		}
+		if (BEMAGIC.isView == TRUE)//スキルのエフェクト
+		{
+			DrawGraph(enemy.x, enemy.y,
+				BEMAGIC.image.Divhandle[BEMAGIC.Viewimage], TRUE);
 		}
 
 		DrawStringToHandle(320, GAME_HEIGHT - 30, "Enter:決定 十字キー:選択 Return:キャンセル", GetColor(255, 255, 255), tanu20.handle); return;
@@ -1298,6 +1571,7 @@ VOID BATTLE_PROC_NEW(VOID)//バトルシーンを初期化する関数
 	UI.Skilltag = 0;
 	UI.EncntUIisView = TRUE;
 	BEnorAT.effectflg = 0;				//通常エフェクトの初期化
+	BEIAI.effectflg = 0;
 	Pstates.criflg = FALSE;				//クリティカルの発生判定を否定に戻す
 	Pstates.DMcalcflg = TRUE;			//ダメージ計算の判定を復活
 	UI.PlusEXPflg = TRUE;				//EXPの計算をできるように戻す
@@ -1395,12 +1669,59 @@ BOOL LOADING_FULL_MUSIC()
 	if (PlayBGM.LOAD_MUSIC(PLAY_SCENE_MUSIC) == FALSE) { return -1; }
 	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
 	if (BEnorAT.se.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }//通常攻撃のSE
-	if (BEhotal.se.LOAD_MUSIC(BATTLE_SE_HOTAL) == FALSE){return -1; }//スキル蛍火のSE
+	//スキル居合の音声読み込み
+	if (BEIAI.se.LOAD_MUSIC(BATTLE_SE_HOTAL) == FALSE){return -1; }//スキル蛍火のSE
 	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_EN_NORMAL_AT) == FALSE) { return -1; }
 	if (OverBGM.LOAD_MUSIC(END_SCENE_MUSIC_OVER) == FALSE) { return -1; }
 	if (BTcar.LOAD_MUSIC(BATTLE_SE_CARSOL) == FALSE) { return -1; }
 	if (BTenter.LOAD_MUSIC(BATTLE_SE_ENTER) == FALSE) { return -1; }
 	return TRUE;
+}
+
+BOOL LOADING_SKILL_IMGandSE(int skillNum,int skilltag)
+{
+	switch (skilltag) {
+	case 0:
+		BEIAI.LOADING_PATH(skillNum);
+		if (BEIAI.se.LOAD_MUSIC(BEIAI.sepath) == FALSE) { return FALSE; }//選択されたスキルの読み込み
+		if (BEIAI.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+			DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, BEIAI.imgpath) == -1)
+		{
+			return FALSE;
+		}
+		return TRUE;
+		break;
+	case 1:
+		BEKIKON.LOADING_PATH(skillNum);
+		if (BEKIKON.se.LOAD_MUSIC(BEKIKON.sepath) == FALSE) { return FALSE; }//選択されたスキルの読み込み
+		if (BEKIKON.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+			DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, BEKIKON.imgpath) == -1)
+		{
+			return FALSE;
+		}
+		return TRUE;
+		break;
+	case 2:
+		BEKEN.LOADING_PATH(skillNum);
+		if (BEKEN.se.LOAD_MUSIC(BEKEN.sepath) == FALSE) { return FALSE; }//選択されたスキルの読み込み
+		if (BEKEN.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+			DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, BEKEN.imgpath) == -1)
+		{
+			return FALSE;
+		}
+		return TRUE;
+		break;
+	case 3:
+		BEMAGIC.LOADING_PATH(skillNum);
+		if (BEMAGIC.se.LOAD_MUSIC(BEMAGIC.sepath) == FALSE) { return FALSE; }//選択されたスキルの読み込み
+		if (BEMAGIC.image.LOADING_DIV_IMAGE(DIV_BT_EFFECT_TATE, DIV_BT_EFFECT_YOKO,
+			DIV_BT_EFFECT_WIDTH, DIV_BT_EFFECT_HEIGHT, BEMAGIC.imgpath) == -1)
+		{
+			return FALSE;
+		}
+		return TRUE;
+		break;
+	}
 }
 
 VOID PLAY_CARSOL_SOUND()
@@ -1476,6 +1797,54 @@ VOID DRAW_MESSAGE(int mestype)
 			"レベルが%d上がった！HP+%d MP+%d 攻撃力+%d 魔法攻撃力+%d すばやさ+%d 防御力+%d 魔法防御力+%d",
 			Pstates.bLv, Pstates.bHPMAX, Pstates.bMPMAX, Pstates.bSTR, Pstates.bMSTR,
 			Pstates.bAGI,Pstates.bDF,Pstates.bMDF);
+		return;
+		break;
+	case NOT_ENOUGH_MP:
+		DrawStringToHandle(0, 340, "MPが足りません", C.White, tanu20.handle);
+		return;
+		break;
+	case SKILL_IAI_WAZANAME:
+		char buf[100] = { "" };
+		strcpy(buf, Pstates.IAI.expl[Pstates.IAI.Viewtag]);
+		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
+		return;
+		break;
+	case SKILL_KIKON_WAZANAME:
+		char buf[100] = { "" };
+		strcpy(buf, Pstates.KIKON.expl[Pstates.KIKON.Viewtag]);
+		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
+		return;
+		break;
+	case SKILL_MAGIC_WAZANAME:
+		char buf[100] = { "" };
+		strcpy(buf, Pstates.MAGIC.expl[Pstates.MAGIC.Viewtag]);
+		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
+		return;
+		break;
+	case SKILL_KEN_WAZANAME:
+		char buf[100] = { "" };
+		strcpy(buf, Pstates.KEN.expl[Pstates.KEN.Viewtag]);
+		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
+		return;
+		break;
+	case SKILL_IAI_WAZA_AT:
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+		"%sの%s!",Pstates.Name,Pstates.IAI.bufName[Pstates.IAI.Viewtag]);
+		return;
+		break;
+	case SKILL_KIKON_WAZA_AT:
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"%sの%s!", Pstates.Name, Pstates.KIKON.bufName[Pstates.KIKON.Viewtag]);
+		return;
+		break;
+	case SKILL_MAGIC_WAZA_AT:
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"%sの%s!", Pstates.Name, Pstates.MAGIC.bufName[Pstates.MAGIC.Viewtag]);
+		return;
+		break;
+	case SKILL_KEN_WAZA_AT:
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"%sの%s!", Pstates.Name, Pstates.KEN.bufName[Pstates.KEN.Viewtag]);
 		return;
 		break;
 	}

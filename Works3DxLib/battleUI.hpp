@@ -2,6 +2,7 @@
 #include <iostream>
 #include "DxLib.h"
 #include "image.hpp"
+#include "music.hpp"
 
 class BATTLE_UI
 {
@@ -50,7 +51,10 @@ public:
 		Magicx2Move = (950 - 710) / 30, Magicy2Move = (590 - 430) / 30;
 	int SnameIAI, SnameKiKon, SnameKen, SnameMagic;
 
-	int Iaiskillx = 480, Iaiskilly = 435, Iaiskillx2 = 940, Iaiskilly2 = 60;
+	int Iaiskillx = 480, Iaiskilly = 435, Iaiskillx2 = 940, Iaiskilly2 = 460;
+	//バトルスキルの要素を収容する変数
+	MUSIC skillSE;
+	
 	BOOL EncntUIisView = TRUE;
 	BOOL CHANGE_COUNT();
 	BOOL ENTER_COUNT_SKILL();
