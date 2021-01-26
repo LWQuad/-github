@@ -4,6 +4,12 @@
 VOID MAPINPUT::RESIZE(int TATE_MAX, int YOKO_MAX)
 {
 	kind.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	width.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	height.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	x.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	y.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	mapF.resize(TATE_MAX, vector<int>(YOKO_MAX));
+	map.resize(TATE_MAX, vector<int>(YOKO_MAX));
 	return;
 }
 
@@ -54,11 +60,14 @@ VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
 
 
 
-BOOL MAP_DIV::DIV_MAP() {
+BOOL MAP_DIV::DIV_MAP(const char* path,int div_tate,int div_yoko,int div_scale) {
+	
+	int div_num = div_tate * div_yoko;
+	handle.resize(div_num), kind.resize(div_num);
 	int mapRes = LoadDivGraph(
-		GAME_MAP_PATH1,										//マップのパス
-		MAP_DIV_NUM, MAP_DIV_TATE, MAP_DIV_YOKO,			//マップを分割する数
-		MAP_DIV_WIDTH, MAP_DIV_HEIGHT,						//画像を分割するの幅と高さ
+		path,										//マップのパス
+		div_num, div_tate, div_yoko,			//マップを分割する数
+		div_scale, div_scale,						//画像を分割するの幅と高さ
 		&this->handle[0]);								//分割した画像が入るハンドル
 
 	if (mapRes == -1)

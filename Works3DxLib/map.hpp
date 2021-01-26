@@ -30,31 +30,22 @@ using namespace std;
 class MAP_DIV//マップチップ画像を管理する関数
 {
 public:
-	int handle[MAP_DIV_NUM];			//分割した画像ハンドルを取得
-	int kind[MAP_DIV_NUM];				//マップの種類
+	vector<int> handle,kind;
 	int width;							//幅
 	int height;							//高
 
-	BOOL DIV_MAP();
+	BOOL DIV_MAP(const char*,int,int,int);
 };
 
 class MAPINPUT //マップを読み込むクラス
 {
 public:
-	int kind[MAP_TATE_MAX1][MAP_YOKO_MAX1];				//マップの種類
-	int width[MAP_TATE_MAX1][MAP_YOKO_MAX1];							//幅
-	int height[MAP_TATE_MAX1][MAP_YOKO_MAX1];							//高
-	int x[MAP_TATE_MAX1][MAP_YOKO_MAX1];
-	int y[MAP_TATE_MAX1][MAP_YOKO_MAX1];
-	int mapF[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
-	int map[MAP_TATE_MAX1][MAP_YOKO_MAX1];//マップデータを格納する二次元配列
 	BOOL LOADING_MAP(const char*);//マップを読み込む（マップのパス）
 	BOOL isVIEW;//表示できるかを示す
 	VOID RESIZE(int, int);
     void MAPSETTING(int,int);//マップの座標を初期セットする（マップチップの幅、高さ）
-
-	vector<vector<int>> kind;
-
+	vector<vector<int>> kind,width,height,x,y,mapF,map;
+	/*-					種類,幅　　高さ　x,y座標　マップの初期化用-*/
 };
 
 

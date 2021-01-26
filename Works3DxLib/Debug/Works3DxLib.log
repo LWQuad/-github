@@ -1,6 +1,6 @@
 ﻿  main.cpp
-C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(73,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(74,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(80,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(81,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(52,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(53,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(74,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
@@ -17,5 +17,9 @@ C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): warning C4474: 'fscanf': 書式�
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(31,32): message : プレースホルダーとそのパラメーターには 3 の可変個引数が必要ですが、4 が指定されています。
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(29,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\Item.hpp(30,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1584,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1821,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1826,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1831,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1836,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1737): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe

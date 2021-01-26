@@ -76,6 +76,7 @@ VOID INPUTBTLSTATES_BUF(VOID);	//1戦闘用にステータスを退避させる関数
 VOID PLAY_CARSOL_SOUND(VOID);	//カーソル音を鳴らす(時間短縮用)
 VOID PLAY_ENTER_SOUND(int);	//決定音を鳴らす(時間短縮用)(再生タイプを設定)
 VOID DRAW_MESSAGE(int);
+VOID RESIZING_FULL_MAP(VOID);
 
 PlayerStates Pstates;
 EnemyStates Estates;
@@ -142,10 +143,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	
 
 	if (DxLib_Init() == -1) { return -1; }	//ＤＸライブラリ初期化処理
-
 	if (LOADING_FULL_IMAGE() == FALSE) { return -1; }//全ての画像を読み込む
 	if (LOADING_FULL_MUSIC() == FALSE) { return -1; }//全ての音楽を読み込む
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
+	RESIZING_FULL_MAP();
 	LOADING_FULL_MAP();				//マップを読み込む関数
 	CREATE_FULL_FONT();				//フォントを作成する関数
 
@@ -1636,9 +1637,20 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	return TRUE;
 }
 
+VOID RESIZING_FULL_MAP()
+{
+	MAPHIT.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPEN.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPUND.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPMID.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPON.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPHIT.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPEN.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
+}
+
 VOID LOADING_FULL_MAP()
 {
-	divmap.DIV_MAP();
+	divmap.DIV_MAP(GAME_MAP_PATH1,MAP_DIV_TATE,MAP_DIV_YOKO,MAP_DIV_WIDTH);
 	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
 	MAPUND.MAPSETTING(divmap.width, divmap.height);
 	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
@@ -1740,6 +1752,8 @@ VOID PLAY_ENTER_SOUND(int playtype)
 
 VOID DRAW_MESSAGE(int mestype)
 {
+	char buf[100] = { "" };
+
 	switch (mestype)
 	{
 	case ENCOUNT:
@@ -1804,25 +1818,21 @@ VOID DRAW_MESSAGE(int mestype)
 		return;
 		break;
 	case SKILL_IAI_WAZANAME:
-		char buf[100] = { "" };
 		strcpy(buf, Pstates.IAI.expl[Pstates.IAI.Viewtag]);
 		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
 		return;
 		break;
 	case SKILL_KIKON_WAZANAME:
-		char buf[100] = { "" };
 		strcpy(buf, Pstates.KIKON.expl[Pstates.KIKON.Viewtag]);
 		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
 		return;
 		break;
 	case SKILL_MAGIC_WAZANAME:
-		char buf[100] = { "" };
 		strcpy(buf, Pstates.MAGIC.expl[Pstates.MAGIC.Viewtag]);
 		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
 		return;
 		break;
 	case SKILL_KEN_WAZANAME:
-		char buf[100] = { "" };
 		strcpy(buf, Pstates.KEN.expl[Pstates.KEN.Viewtag]);
 		DrawStringToHandle(0, 340, buf, C.White, tanu20.handle);
 		return;

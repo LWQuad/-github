@@ -2,14 +2,19 @@
 #include <iostream>
 #include "DxLib.h"
 #include "windowsystem.h"
+#include <vector>
 #include "map.hpp"
+using namespace std;
+
 class MAP_HITBOX:public MAPINPUT
 {
 public:
 	BOOL MY_CHECK_MAP1_PLAYER_COLL(RECT);
 	BOOL MY_CHECK_RECT_COLL(RECT, RECT);
 	BOOL SETTING_HITBOX(int, int);
-	RECT Hitmap[MAP_TATE_MAX1][MAP_YOKO_MAX1];
+	VOID RESIZING_HITBOX(int, int);
+	//RECT Hitmap[MAP_TATE_MAX1][MAP_YOKO_MAX1];
+	vector<vector<RECT>> Hitmap;
 };
 
 class MAP_ENEMY :public MAP_HITBOX

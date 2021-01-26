@@ -1,5 +1,11 @@
 #include "hitbox.hpp"
 
+VOID MAP_HITBOX::RESIZING_HITBOX(int TATE_MAX,int YOKO_MAX)
+{
+	Hitmap.resize(TATE_MAX+1, vector<RECT>(YOKO_MAX+1));
+	return;
+}
+
 BOOL MAP_HITBOX::MY_CHECK_MAP1_PLAYER_COLL(RECT playercoll)
 {
 	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
