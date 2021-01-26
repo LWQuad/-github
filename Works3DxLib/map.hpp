@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
 #include <stdlib.h>
 #include "windowsystem.h"
 #include "DxLib.h"
@@ -9,11 +10,11 @@
 using namespace std;
 
 #define GAME_MAP_PATH1 TEXT(".\\IMAGEs\\MAPIMAGE\\mapchip1.png")
-#define GAME_MAP1_UNDER_TXT TEXT(".\\MAP\\map1_マップ下.txt")
-#define GAME_MAP1_MIDDLE_TXT TEXT(".\\MAP\\map1_マップ中.txt")
-#define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.txt")
-#define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.txt")
-#define GAME_MAP1_ENEMYMAP TEXT(".\\MAP\\map1_敵の出現マップ.txt")
+#define GAME_MAP1_UNDER_TXT TEXT(".\\MAP\\map1_マップ下.csv")
+#define GAME_MAP1_MIDDLE_TXT TEXT(".\\MAP\\map1_マップ中.csv")
+#define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.csv")
+#define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.csv")
+#define GAME_MAP1_ENEMYMAP TEXT(".\\MAP\\map1_敵の出現マップ.csv")
 
 #define MAP_MURA_UNDER_TXT TEXT("")
 

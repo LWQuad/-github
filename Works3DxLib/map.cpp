@@ -15,14 +15,30 @@ VOID MAPINPUT::RESIZE(int TATE_MAX, int YOKO_MAX)
 
 BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//マップデータを読み込む関数(マップファイルパス)
 {
+	//ifstream ifs(maptxt);
+	//string str;
+	//int tate = 0, yoko = 0;
+	//while (getline(ifs, str, ','))
+	//{
+	//	this->map[tate][yoko] = atoi(str.c_str());
+	//	yoko++;
+	//	if (yoko > MAP_YOKO_MAX1 - 1) { yoko = 0; tate++; }
+	//}
+	//ifs.close();
 	ifstream ifs(maptxt);
 	string str;
 	int tate = 0, yoko = 0;
-	while (getline(ifs, str, ','))
+	while (getline(ifs, str))
 	{
-		this->map[tate][yoko] = atoi(str.c_str());
-		yoko++;
-		if (yoko > MAP_YOKO_MAX1 - 1) { yoko = 0; tate++; }
+		string tmp = "";
+		istringstream stream(str);
+		while (getline(stream, tmp, ','))
+		{
+			this->map[tate][yoko] = atoi(tmp.c_str());
+			yoko++;
+		}
+		yoko = 0;
+		tate++;
 	}
 	ifs.close();
 	return TRUE;

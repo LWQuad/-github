@@ -1,4 +1,9 @@
-﻿  main.cpp
+﻿  event.cpp
+  hitbox.cpp
+  image.cpp
+C:\作品Ⅲgithub\Works3DxLib\image.cpp(8,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\image.cpp(24,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  main.cpp
 C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(80,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(81,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatas.hpp(52,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
@@ -21,5 +26,7 @@ C:\作品Ⅲgithub\Works3DxLib\main.cpp(1821,3): warning C4996: 'strcpy': This f
 C:\作品Ⅲgithub\Works3DxLib\main.cpp(1826,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\main.cpp(1831,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\main.cpp(1836,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  map.cpp
+  コードを生成中...
 C:\作品Ⅲgithub\Works3DxLib\main.cpp(1737): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe
