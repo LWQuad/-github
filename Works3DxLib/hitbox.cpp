@@ -2,21 +2,26 @@
 
 VOID MAP_HITBOX::RESIZING_HITBOX(int TATE_MAX,int YOKO_MAX)
 {
-	Hitmap.resize(TATE_MAX+1, vector<RECT>(YOKO_MAX+1));
+	Hitmap.resize(TATE_MAX, vector<RECT>(YOKO_MAX));
 	return;
 }
 
-BOOL MAP_HITBOX::MY_CHECK_MAP1_PLAYER_COLL(RECT playercoll)
+BOOL MAP_HITBOX::MY_CHECK_MAP1_PLAYER_COLL(RECT playercoll,int TATE_MAX,int YOKO_MAX,int& gamescene)
 {
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	for (int tate = 0; tate < TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 			//プレイヤーとマップが当たっているとき
 			if (MY_CHECK_RECT_COLL(playercoll, this->Hitmap[tate][yoko]) == TRUE)
 			{
-				if (this->map[tate][yoko] == 63)//壁の時
+				if (this->map[tate][yoko] == HitObj)//壁の時
 				{
+					return TRUE;
+				}
+				if (this->map[tate][yoko] == MVMapHitObj)//フロア移動の時
+				{
+					gamescene = GAME_LOAD_MAP_SCENE;
 					return TRUE;
 				}
 			}
@@ -39,17 +44,18 @@ BOOL MAP_HITBOX::MY_CHECK_RECT_COLL(RECT a, RECT b)
 	return FALSE;		//当たっていない
 };
 
-BOOL MAP_HITBOX::SETTING_HITBOX(int chipwidth, int chipheight)//マップへの当たり判定の設定
+BOOL MAP_HITBOX::SETTING_HITBOX(int chipwidth, int chipheight,int Stx,int Sty
+	,int TATE_MAX,int YOKO_MAX)//マップへの当たり判定の設定
 {
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	for (int tate = 0; tate < TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 			//マップの当たり判定を設定
-			this->Hitmap[tate][yoko].left = (yoko + 0) * chipwidth + 1 - 10 * chipwidth;
-			this->Hitmap[tate][yoko].top = (tate + 0) * chipheight + 1 - 20 * chipheight;
-			this->Hitmap[tate][yoko].right = (yoko + 1) * chipwidth - 1 - 10 * chipwidth;
-			this->Hitmap[tate][yoko].bottom = (tate + 1) * chipheight - 1 - 20 * chipheight;
+			this->Hitmap[tate][yoko].left = (yoko + 0) * chipwidth + 1 - Stx;
+			this->Hitmap[tate][yoko].top = (tate + 0) * chipheight + 1 - Sty;
+			this->Hitmap[tate][yoko].right = (yoko + 1) * chipwidth - 1 - Stx;
+			this->Hitmap[tate][yoko].bottom = (tate + 1) * chipheight - 1 - Sty;
 		}
 	}
 	return TRUE;
@@ -66,16 +72,16 @@ BOOL MAP_ENEMY::ENEMY_FLAG_RIZE()//敵に会うフラグを上昇させる
 	else { return FALSE; }
 }
 
-int MAP_ENEMY::MY_CHECK_ENEMY_PLAYER_COLL(RECT playercoll)//エネミーマップとの当たり判定
+int MAP_ENEMY::MY_CHECK_ENEMY_PLAYER_COLL(RECT playercoll,int TATE_MAX,int YOKO_MAX)//エネミーマップとの当たり判定
 {
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	for (int tate = 0; tate < TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 			//プレイヤーとマップが当たっているとき
 			if (MY_CHECK_RECT_COLL(playercoll, this->Hitmap[tate][yoko]) == TRUE)
 			{
-				if (this->map[tate][yoko] == 191)//草原の時
+				if (this->map[tate][yoko] == HitObj)//草原の時
 				{
 					if (ENEMY_FLAG_RIZE() == TRUE)
 					{

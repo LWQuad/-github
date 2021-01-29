@@ -25,18 +25,6 @@ using namespace std;
 #define MOUSE_R_CLICK_TITLE		TEXT("ゲーム中断")
 #define MOUSE_R_CLICK_CAPTION	TEXT("ゲームを中断し、タイトル画面に戻りますか？")
 
-enum GAME_SCENE	//ゲームシーンの列挙
-{
-	GAME_START_SCENE,
-	GAME_PLAY_SCENE,
-	GAME_BATTLE_SCENE,
-	GAME_EVENT_SCENE,
-	GAME_END_SCENE,
-	GAME_STATES_SCENE
-};
-
-
-
 class HPbar
 {
 	int HPwidth = 100;
@@ -66,9 +54,15 @@ VOID MY_STATES(VOID);			//イベント画面
 VOID MY_STATES_PROC(VOID);		//イベント画面の処理
 VOID MY_STATES_DRAW(VOID);		//イベント画面の描画
 
+VOID MY_LOAD_MAP(VOID);			//イベント画面
+VOID MY_LOAD_MAP_PROC(VOID);		//イベント画面の処理
+VOID MY_LOAD_MAP_DRAW(VOID);		//イベント画面の描画
+
 VOID BATTLE_PROC_NEW(VOID);		//バトルシーンを初期化する関数
 BOOL LOADING_FULL_IMAGE(VOID);	//画像全てをロードする関数
-VOID LOADING_FULL_MAP(VOID);	//マップを読み込む関数
+VOID LOADING_SAMPLE_MAP(VOID);	//マップを読み込む関数
+VOID LOADING_VILLAGE_MAP(VOID);	//村マップを読み込む関数
+VOID LOADING_FOREST_MAP(VOID);	//森マップを読み込む関数
 VOID CREATE_FULL_FONT(VOID);	//フォントを作成する関数
 BOOL LOADING_FULL_MUSIC(VOID);	//音楽を読み込む関数
 BOOL LOADING_SKILL_IMGandSE(int,int); //スキル使用時にSEと画像を読み込む
@@ -76,7 +70,9 @@ VOID INPUTBTLSTATES_BUF(VOID);	//1戦闘用にステータスを退避させる関数
 VOID PLAY_CARSOL_SOUND(VOID);	//カーソル音を鳴らす(時間短縮用)
 VOID PLAY_ENTER_SOUND(int);	//決定音を鳴らす(時間短縮用)(再生タイプを設定)
 VOID DRAW_MESSAGE(int);
-VOID RESIZING_FULL_MAP(VOID);
+VOID RESIZING_SAMPLE_MAP(VOID);
+VOID RESIZING_VILLAGE_MAP(VOID);
+VOID RESIZING_FOREST_MAP(VOID);
 
 PlayerStates Pstates;
 EnemyStates Estates;
@@ -90,9 +86,7 @@ BATTLE_EFFECT BEnorAT;
 BATTLE_EFFECT BEIAI, BEKIKON, BEMAGIC, BEKEN;
 CREATE_FONTHANDLE tanu20,tanu20n,tanu30,tanu30n;
 MAP_DIV divmap;//マップチップ分割用クラス
-MAPINPUT MAPUND;//下のマップ
-MAPINPUT MAPMID;//中のマップ
-MAPINPUT MAPON;//上のマップ
+MAPINPUT MAPUND,MAPMID,MAPON;//マップ
 MAP_HITBOX MAPHIT;//当たり判定のマップ
 MAP_ENEMY MAPEN;//敵の出現マップ
 //ENEMY Senemy;
@@ -131,6 +125,9 @@ BOOL NowLvUPflg=FALSE;
 int categori = 0;
 int cateprocess = 0;
 
+int TATE_MAX = 0;
+int YOKO_MAX = 0;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	ChangeWindowMode(TRUE);								//ウィンドウモードに設定
@@ -146,11 +143,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (LOADING_FULL_IMAGE() == FALSE) { return -1; }//全ての画像を読み込む
 	if (LOADING_FULL_MUSIC() == FALSE) { return -1; }//全ての音楽を読み込む
 	SetMouseDispFlag(TRUE);			//マウスカーソルを表示
-	RESIZING_FULL_MAP();
-	LOADING_FULL_MAP();				//マップを読み込む関数
+/*	RESIZING_SAMPLE_MAP();
+	LOADING_SAMPLE_MAP();*/				//マップを読み込む関数
+	RESIZING_VILLAGE_MAP();//村マップ
+	LOADING_VILLAGE_MAP();
+
 	CREATE_FULL_FONT();				//フォントを作成する関数
 
-	GameScene = GAME_PLAY_SCENE;	//ゲームシーンはスタート画面から
+	GameScene = GAME_START_SCENE;	//ゲームシーンはスタート画面から
 
 	SetDrawScreen(DX_SCREEN_BACK);	//Draw系関数は裏画面に描画
 
@@ -188,6 +188,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				break;
 			case GAME_STATES_SCENE:
 				MY_STATES(); //ステータス画面
+				break;
+			case GAME_LOAD_MAP_SCENE:
+				MY_LOAD_MAP(); //マップをロードする画面
 				break;
 		}
 		//MY_FPS_DRAW();		//FPSの処理[描画]
@@ -274,6 +277,30 @@ VOID MY_START_DRAW()
 	return;
 }
 
+VOID MY_LOAD_MAP()
+{
+	MY_LOAD_MAP_PROC();
+	MY_LOAD_MAP_DRAW();
+	return;
+}
+
+VOID MY_LOAD_MAP_PROC()
+{
+	RESIZING_FOREST_MAP();//森マップ
+	LOADING_FOREST_MAP();
+	player.image.x = divmap.width * 7; player.image.y = divmap.height * 20;
+	GameScene = GAME_PLAY_SCENE;
+	return;
+}
+
+VOID MY_LOAD_MAP_DRAW()
+{
+	//DrawStringToHandle(0,0,"ロード中…",C.White,tanu30n.handle);
+	//WaitTimer(1000);
+	
+	return;
+}
+
 VOID MY_PLAY()
 {
 	MY_PLAY_PROC();
@@ -305,9 +332,9 @@ VOID MY_PLAY_PROC()
 	}
 	//プレイヤーの当たり判定を設定
 	player.coll.left = player.image.x+5;
-	player.coll.top = player.image.y+5;
+	player.coll.top = player.image.y+10;
 	player.coll.right = player.image.x + player.image.width-5;
-	player.coll.bottom = player.image.y + player.image.height-5;
+	player.coll.bottom = player.image.y + player.image.height;
 
 	//移動前のプレイヤーの場所を取得
 	player.OldX = player.image.x;
@@ -316,9 +343,9 @@ VOID MY_PLAY_PROC()
 	{
 		player.Nowhandle = player.image.Divhandle[10];
 		player.coll.top -= 5;
-		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll,TATE_MAX,YOKO_MAX,GameScene) == TRUE){}
 		else{ player.image.y -= 5; }
-		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX) == 1)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
@@ -331,9 +358,9 @@ VOID MY_PLAY_PROC()
 		if (MAPON.y[0][0] < 0 && player.image.y < 100)
 		{
 			player.image.y = player.OldY;
-			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+			for (int tate = 0; tate < TATE_MAX; tate++)
 			{
-				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+				for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 				{
 					//マップを描画
 					MAPON.y[tate][yoko] += 5;
@@ -349,17 +376,17 @@ VOID MY_PLAY_PROC()
 			}
 		}
 	}
+
 	if (CheckHitKey(KEY_INPUT_LEFT) == TRUE )
 	{
-		/*player.image.x -= 5;*/
 		player.Nowhandle = player.image.Divhandle[4];
 		player.coll.left -= 5;
-		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE)
 		{}
 		else {
 			player.image.x -= 5;
 		}
-		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX) == 1)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
@@ -373,9 +400,9 @@ VOID MY_PLAY_PROC()
 		if (MAPON.x[0][0] < 0 && player.image.x < 150)
 		{
 			player.image.x = player.OldX;
-			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+			for (int tate = 0; tate < TATE_MAX; tate++)
 			{
-				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+				for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 				{
 					//マップを描画
 					MAPON.x[tate][yoko] += 5;
@@ -395,10 +422,10 @@ VOID MY_PLAY_PROC()
 	{
 		player.Nowhandle = player.image.Divhandle[1];
 		player.coll.bottom += 5;
-		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE)
 		{}
 		else { player.image.y += 5; }
-		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX) == 1)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
@@ -409,12 +436,12 @@ VOID MY_PLAY_PROC()
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;
 		}
-		if (MAPON.y[MAP_TATE_MAX1 - 1][0] > GAME_HEIGHT && player.image.y > 500)
+		if (MAPON.y[TATE_MAX - 1][0] > GAME_HEIGHT && player.image.y > 500)
 		{
 			player.image.y = player.OldY;
-			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+			for (int tate = 0; tate < TATE_MAX; tate++)
 			{
-				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+				for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 				{
 					//マップを描画
 					MAPON.y[tate][yoko] -= 5;
@@ -435,9 +462,9 @@ VOID MY_PLAY_PROC()
 	{
 		player.Nowhandle = player.image.Divhandle[7];
 		player.coll.right += 5;
-		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE){}
+		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE){}
 		else { player.image.x += 5; }
-		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll) == 1)
+		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX) == 1)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
@@ -447,12 +474,12 @@ VOID MY_PLAY_PROC()
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;}
-		if (MAPON.x[0][MAP_YOKO_MAX1 - 1] > GAME_WIDTH && player.image.x > 650)
+		if (MAPON.x[0][YOKO_MAX - 1] > GAME_WIDTH && player.image.x > 650)
 		{
 			player.image.x = player.OldX;
-			for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+			for (int tate = 0; tate < TATE_MAX; tate++)
 			{
-				for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+				for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 				{
 					//マップを描画
 					MAPON.x[tate][yoko] -= 5;
@@ -478,9 +505,9 @@ VOID MY_PLAY_PROC()
 VOID MY_PLAY_DRAW()
 {
 	SetDrawBright(255, 255, 255);
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)//プレイヤーより下のマップ描画
+	for (int tate = 0; tate < TATE_MAX; tate++)//プレイヤーより下のマップ描画
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 			//マップを描画
 			/*if(MAPUND.isVIEW==TRUE)*/
@@ -495,8 +522,6 @@ VOID MY_PLAY_DRAW()
 				MAPMID.y[tate][yoko],
 				divmap.handle[MAPMID.kind[tate][yoko]],
 				TRUE);
-			
-			/*if (MAPON.isVIEW == TRUE)*/
 
 		}
 	}
@@ -504,9 +529,9 @@ VOID MY_PLAY_DRAW()
 	//{
 		DrawGraph(player.image.x, player.image.y, player.Nowhandle, TRUE);
 /*	}*///プレイヤーの描画
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)//プレイヤーより上のマップ描画
+	for (int tate = 0; tate < TATE_MAX; tate++)//プレイヤーより上のマップ描画
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 
 			DrawGraph(
@@ -515,7 +540,7 @@ VOID MY_PLAY_DRAW()
 				divmap.handle[MAPON.kind[tate][yoko]],
 				TRUE);
 		}
-		//for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		//for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		//{
 		//	DrawGraph(
 		//		MAPHIT.x[tate][yoko],
@@ -523,7 +548,7 @@ VOID MY_PLAY_DRAW()
 		//		divmap.handle[MAPHIT.kind[tate][yoko]],
 		//		TRUE);
 		//}
-		//for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		//for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		//{
 		//	DrawGraph(
 		//		MAPEN.x[tate][yoko],
@@ -532,9 +557,9 @@ VOID MY_PLAY_DRAW()
 		//		TRUE);
 		//}
 	}
-//	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+//	for (int tate = 0; tate < TATE_MAX; tate++)
 //{
-//	for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+//	for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 //	{
 //		//壁ならば
 //		if (MAPHIT.kind[tate][yoko] == 63)
@@ -1637,7 +1662,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	return TRUE;
 }
 
-VOID RESIZING_FULL_MAP()
+VOID RESIZING_SAMPLE_MAP()
 {
 	MAPHIT.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
 	MAPEN.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
@@ -1648,21 +1673,108 @@ VOID RESIZING_FULL_MAP()
 	MAPEN.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
 }
 
-VOID LOADING_FULL_MAP()
+VOID RESIZING_VILLAGE_MAP()
 {
+	MAPHIT.RESIZING_HITBOX(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPEN.RESIZING_HITBOX(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPUND.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPMID.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPON.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPHIT.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPEN.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+}
+
+VOID RESIZING_FOREST_MAP()
+{
+	MAPHIT.RESIZING_HITBOX(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPEN.RESIZING_HITBOX(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPUND.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPMID.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPON.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPHIT.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPEN.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+}
+
+VOID LOADING_SAMPLE_MAP()
+{
+	TATE_MAX = MAP_TATE_MAX1, YOKO_MAX = MAP_YOKO_MAX1;
 	divmap.DIV_MAP(GAME_MAP_PATH1,MAP_DIV_TATE,MAP_DIV_YOKO,MAP_DIV_WIDTH);
 	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
-	MAPUND.MAPSETTING(divmap.width, divmap.height);
+	MAPUND.MAPSETTING(divmap.width, divmap.height,MAP_SAMP_STx,MAP_SAMP_STy,
+		MAP_TATE_MAX1,MAP_YOKO_MAX1);
 	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
-	MAPMID.MAPSETTING(divmap.width, divmap.height);
+	MAPMID.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1, MAP_YOKO_MAX1);
 	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);//上のマップ
-	MAPON.MAPSETTING(divmap.width, divmap.height);
+	MAPON.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1, MAP_YOKO_MAX1);
 	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);//当たり判定のマップ
-	MAPHIT.MAPSETTING(divmap.width, divmap.height);
-	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height);
+	MAPHIT.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1,MAP_YOKO_MAX1);
+	MAPHIT.HitObj = MAP_SAMPLE_HITOBJ;
 	MAPEN.LOADING_MAP(GAME_MAP1_ENEMYMAP);//敵の出現マップ
-	MAPEN.MAPSETTING(divmap.width, divmap.height);
-	MAPEN.SETTING_HITBOX(divmap.width, divmap.height);
+	MAPEN.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1, MAP_YOKO_MAX1);
+	MAPEN.SETTING_HITBOX(divmap.width, divmap.height,MAP_SAMP_STx, MAP_SAMP_STy,
+		MAP_TATE_MAX1,MAP_YOKO_MAX1);
+	return;
+}
+
+VOID LOADING_VILLAGE_MAP()
+{
+	TATE_MAX =MAP_MURA_TATEMAX , YOKO_MAX = MAP_MURA_YOKOMAX;
+	divmap.DIV_MAP(MAP_MURA_PATH, MAP_MURA_DIV_TATE, MAP_MURA_DIV_YOKO, MAP_DIV_WIDTH);
+	MAPUND.LOADING_MAP(MAP_MURA_UNDER);//下のマップ
+	MAPUND.MAPSETTING(divmap.width, divmap.height,MAP_MURA_STx,MAP_MURA_STy,
+		MAP_MURA_TATEMAX,MAP_MURA_YOKOMAX);
+	MAPMID.LOADING_MAP(MAP_MURA_MID);//中のマップ
+	MAPMID.MAPSETTING(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPON.LOADING_MAP(MAP_MURA_ON);//上のマップ
+	MAPON.MAPSETTING(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPHIT.LOADING_MAP(MAP_MURA_HITBOX);//当たり判定のマップ
+	MAPHIT.MAPSETTING(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX,MAP_MURA_YOKOMAX);
+	MAPHIT.HitObj = MAP_MURA_HITOBJ;
+	MAPHIT.MVMapHitObj = MAP_MURA_MOVE_HITOBJ;
+	MAPEN.LOADING_MAP(MAP_MURA_ENEMYMAP);//敵の出現マップ
+	MAPEN.MAPSETTING(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPEN.SETTING_HITBOX(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX,MAP_MURA_YOKOMAX);
+	return;
+}
+
+VOID LOADING_FOREST_MAP()
+{
+	TATE_MAX = MAP_FOREST_TATEMAX, YOKO_MAX = MAP_FOREST_YOKOMAX;
+	divmap.DIV_MAP(MAP_FOREST_PATH, MAP_FOREST_DIV_TATE, MAP_FOREST_DIV_YOKO, MAP_DIV_WIDTH);
+	MAPUND.LOADING_MAP(MAP_FOREST_UNDER);//下のマップ
+	MAPUND.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPMID.LOADING_MAP(MAP_FOREST_MID);//中のマップ
+	MAPMID.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPON.LOADING_MAP(MAP_FOREST_ON);//上のマップ
+	MAPON.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPHIT.LOADING_MAP(MAP_FOREST_HITBOX);//当たり判定のマップ
+	MAPHIT.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPHIT.HitObj = MAP_FOREST_HITOBJ;
+	MAPEN.LOADING_MAP(MAP_FOREST_ENEMYMAP);//敵の出現マップ
+	MAPEN.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPEN.SETTING_HITBOX(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPEN.HitObj = MAP_FOREST_ENEMY_HITOBJ;
 	return;
 }
 

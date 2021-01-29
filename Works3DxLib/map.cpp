@@ -15,16 +15,6 @@ VOID MAPINPUT::RESIZE(int TATE_MAX, int YOKO_MAX)
 
 BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ğ“Ç‚İ‚ŞŠÖ”(ƒ}ƒbƒvƒtƒ@ƒCƒ‹ƒpƒX)
 {
-	//ifstream ifs(maptxt);
-	//string str;
-	//int tate = 0, yoko = 0;
-	//while (getline(ifs, str, ','))
-	//{
-	//	this->map[tate][yoko] = atoi(str.c_str());
-	//	yoko++;
-	//	if (yoko > MAP_YOKO_MAX1 - 1) { yoko = 0; tate++; }
-	//}
-	//ifs.close();
 	ifstream ifs(maptxt);
 	string str;
 	int tate = 0, yoko = 0;
@@ -44,14 +34,14 @@ BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ğ“Ç‚İ‚ŞŠÖ”(ƒ}ƒbƒ
 	return TRUE;
 }
 
-VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
+VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight,int Stx,int Sty,int TATE_MAX,int YOKO_MAX)
 //ƒ}ƒbƒvƒf[ƒ^‚ÌÀ•W‚ğİ’è‚·‚éŠÖ”(ƒ}ƒbƒvƒ`ƒbƒv‚Ì•Aƒ}ƒbƒvƒ`ƒbƒv‚Ì‚‚³)
 {
 	
 
-	for (int tate = 0; tate < MAP_TATE_MAX1; tate++)
+	for (int tate = 0; tate < TATE_MAX; tate++)
 	{
-		for (int yoko = 0; yoko < MAP_YOKO_MAX1; yoko++)
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
 		{
 			//ƒ}ƒbƒvƒf[ƒ^‰Šú‰»—p‚Éî•ñ‚ğƒRƒs[
 			this->mapF[tate][yoko] = this->map[tate][yoko];
@@ -66,8 +56,8 @@ VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight)
 			//ƒ}ƒbƒv‚ÌÀ•W‚ğİ’è
 			this->x[tate][yoko] =(yoko * this->width[tate][yoko]);
 			this->y[tate][yoko] =(tate * this->height[tate][yoko]);
-			this->x[tate][yoko] -= 10 * chipwidth;
-			this->y[tate][yoko] -= 20 * chipheight;
+			this->x[tate][yoko] -= Stx;
+			this->y[tate][yoko] -= Sty;
 			this->isVIEW = FALSE;
 		}
 	}
