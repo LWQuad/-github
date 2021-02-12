@@ -1,33 +1,89 @@
 #pragma once
-#define ITEMNUM 30
-#define ITEMNAME 30
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include "image.hpp"
+using namespace std;
+
+#define ITEMNUM 10
+#define ITEM_FILE_PATH TEXT(".\\ITEM\\Item.csv")
 
 class ITEM
 {
 public:
-	int healPoint;
-	char Name[10];
-	int tag = 0;
-	int heal[ITEMNUM];
-	int htag[ITEMNUM];
-	char hName[ITEMNUM][ITEMNAME];
-	void INPUTSTATES_SYUDOU(int,char,int);
-	void INPUTITEM_HEAL(int,char,int,const char*);
+	LOAD_DIV_IMAGE image;
+	vector<int> healHP,healMP,tag,buy,sell,have;
+	char Name[ITEMNUM][30], Expl[ITEMNUM][200],Expl2[ITEMNUM][5][160], badStatus[ITEMNUM][30], goodStatus[ITEMNUM][30];
+	BOOL INPUTITEM_HEAL(const char*);
+	VOID GET_ITEM(int);
+
+	//アイテムの情報を読み込む関数
 };
 
-void ITEM::INPUTSTATES_SYUDOU(int Point,char ch,int tag)
+BOOL ITEM::INPUTITEM_HEAL(const char* itempath)//マップデータを読み込む関数(マップファイルパス)
 {
-	healPoint = Point;
-	Name[0] = ch;
-	this->tag = tag;
-};
+	ifstream ifs(itempath);
+	string str, strexpl;
+	int colunm = 0, line = 0;
+	while (getline(ifs, str))
+	{
+		int i = 0;
+		string tmp = "";
+		istringstream stream(str);
+		while (getline(stream, tmp, ','))
+		{
+			string expltmp = "";
+			istringstream explstream(tmp);
+			switch (colunm) {
+			case 0://名前を読み込む
+				strcpy_s(Name[line], tmp.c_str());
+				break;
+			case 1://説明を読み込む
+				while (getline(explstream, expltmp, 'n'))
+				{
+					strcpy_s(Expl2[line][i], expltmp.c_str());
+					i++;
+				}
+				i = 0;
+				strcpy_s(Expl[line], tmp.c_str());
+				break;
+			case 2://タグを読み込む
+				tag.push_back(atoi(tmp.c_str()));
+				break;
+			case 3://HP回復量を読み込む
+				healHP.push_back(atoi(tmp.c_str()));
+				break;
+			case 4://MP回復量を読み込む
+				healMP.push_back(atoi(tmp.c_str()));
+				break;
+			case 5://GOODSTATUS
+				strcpy_s(goodStatus[line], tmp.c_str());
+				break;
+			case 6://BADSTATUS
+				strcpy_s(badStatus[line], tmp.c_str());
+				break;
+			case 7://購入額
+				buy.push_back(atoi(tmp.c_str()));
+				break;
+			case 8://売却額
+				sell.push_back(atoi(tmp.c_str()));
+				break;
+			case 9://所持数
+				have.push_back(atoi(tmp.c_str()));
+				break;
+			}
+			colunm++;
+		}
+		line++;
+		colunm = 0;
+	}
+	ifs.close();
+	return TRUE;
+}
 
-void ITEM::INPUTITEM_HEAL(int Point, char ch, int tag,const char* statespath)
+VOID ITEM::GET_ITEM(int Num)
 {
-	int ret;
-	int n = 0;
-	FILE* fp = fopen(statespath, "r");
-	while (ret = fscanf(fp, "%d,%s,%d,",
-		&heal[n],&hName[n],&htag[n],n++) != EOF) {};
-	fclose(fp);
+	return;
 }

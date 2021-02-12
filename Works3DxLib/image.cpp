@@ -51,7 +51,7 @@ const char* divimagepath)
 	if (mapRes == -1)
 	{
 		//エラーメッセージ表示
-		MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "キャラ画像の読み込みに失敗しました", MB_OK);
+		MessageBox(GetMainWindowHandle(), ERROR_MESSAGE, "キャラ画像の読み込みに失敗しました", MB_OK);
 		return FALSE;
 	}
 	//幅と高さを取得

@@ -158,11 +158,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="music.cpp" />
-    <ClCompile Include="statesUI.cpp" />
+    <ClCompile Include="mykeyinput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BATTLEEFFECT.hpp" />
     <ClInclude Include="battleUI.hpp" />
+    <ClInclude Include="ChangingTime.hpp" />
     <ClInclude Include="enemystatas.hpp" />
     <ClInclude Include="event.hpp" />
     <ClInclude Include="font.hpp" />
@@ -171,8 +172,9 @@
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="map.hpp" />
     <ClInclude Include="music.hpp" />
+    <ClInclude Include="mykey_input.hpp" />
     <ClInclude Include="player.hpp" />
-    <ClInclude Include="playerstatas.hpp" />
+    <ClInclude Include="playerstatus.hpp" />
     <ClInclude Include="startUI.hpp" />
     <ClInclude Include="StatesUI.hpp" />
     <ClInclude Include="windowsystem.h" />

@@ -17,8 +17,15 @@ using namespace std;
 
 #define IMAGE_TITLE TEXT(".\\IMAGEs\\Kitune.jpg")
 #define IMAGE_PLAYER_BATTLE TEXT(".\\IMAGEs\\playerimage.png")
-#define IMAGE_ENEMY1 TEXT(".\\IMAGEs\\enemyimage.png")
+//エネミー
+#define IMAGE_ENEMY_OKAUMIUSHI TEXT(".\\IMAGEs\\ENEMY\\オカウミウシ.png")
+#define IMAGE_ENEMY_GOLDUMIUSHI TEXT(".\\IMAGEs\\ENEMY\\ゴールドウミウシ.png")
+#define IMAGE_ENEMY_SURIMEUNKOU TEXT(".\\IMAGEs\\ENEMY\\スライムアンコウ.png")
+#define IMAGE_ENEMY_GREYLOTUS TEXT(".\\IMAGEs\\ENEMY\\グレーロータス.png")
+
+
 #define IMAGE_BATTLE_BACK	TEXT(".\\IMAGEs\\battle_back.png")
+#define IMAGE_BATTLE_BACK_NUMA	TEXT(".\\IMAGEs\\バトルステージ_沼.png")
 #define IMAGE_UI_BACK TEXT(".\\IMAGEs\\BattleUI\\UI背景.png")
 #define IMAGE_UI_KOUGEKI TEXT(".\\IMAGEs\\BattleUI\\攻撃.png")
 #define IMAGE_UI_SKILL TEXT(".\\IMAGEs\\BattleUI\\スキル.png")
@@ -77,5 +84,10 @@ class DEFAULT_COLOR
 public:
 	int White = GetColor(255, 255, 255);
 	int Black = GetColor(0, 0, 0);
+	int Red = GetColor(255, 0, 0);
+	int MPColor = GetColor(30, 144, 255);
+	int HPColorN = GetColor(0, 255, 95);
+	int BufColor = GetColor(255, 160, 0);
+	int DeBufColor = GetColor(0, 160, 255);
 };
 

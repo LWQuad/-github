@@ -5,38 +5,46 @@
 class STATES_UI
 {
 private:
-	int S_countM = 30, C_countM = 30;
+
 public:
 	LOAD_SINGLE_IMAGE charaimg, UIimg, back, back2;
 	int Ctag = 0;
-	int S_count = 0,C_count = 0;
-	int Savetag = 0;
+	int Savetag = 0, SavingStch = 0;
+	int CataEndtag = 0;
 	//ステータス画面のステータス位置
 	int STallx = 50;
-	BOOL CHECK_CHENGE_COUNT_STorPLY();//プレイ画面とステータス画面を行き来する
-	//カウントの可否を判定する関数
-	BOOL CHECK_CHENGE_COUNT_CATEGORY();//ステータスのカテゴリ変更のタブを管理する
+	int StatusX = 10, UIY = 15, StatusX2 = 230, UIY2 = 70,
+		ItemX = 250, ItemX2 = 470, SaveX = 490, SaveX2 = 710,
+		LoadX = 730, LoadX2 = 950;
+	int CarsolX=StatusX, CarsolY=UIY, CarsolX2=StatusX2, CarsolY2=UIY2;
+	//ステータス画面のアイテム位置
+	int ItemPosX = 50, ItemPosY = 100;
+	int ICarsolX = ItemPosX-5, ICarsolY = ItemPosY-5, ICarsolX2 = ItemPosX+275, ICarsolY2 = ItemPosY+25;
+	int ItemBrend = 200;
+	BOOL ItemBrendflg = TRUE;
+	VOID ChengingBrend_Item();
+	int Itemtag = 0;
 };
 
-BOOL STATES_UI::CHECK_CHENGE_COUNT_STorPLY()
+VOID STATES_UI::ChengingBrend_Item()
 {
-	if (S_count >= S_countM)
+	if (ItemBrendflg == TRUE)
 	{
-		return TRUE;
+		ItemBrend -= 5;
 	}
-	else {
-		return FALSE;
+	if (ItemBrendflg == FALSE)
+	{
+		ItemBrend += 5;
+	}
+	if (ItemBrend <= 0)
+	{
+		ItemBrendflg = FALSE;
+	}
+	if (ItemBrend >= 200)
+	{
+		ItemBrendflg = TRUE;
 	}
 }
 
-BOOL STATES_UI::CHECK_CHENGE_COUNT_CATEGORY()
-{
-	if (C_count >= C_countM)
-	{
-		return TRUE;
-	}
-	else {
-		return FALSE;
-	}
-}
+
 

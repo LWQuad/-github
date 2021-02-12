@@ -1,35 +1,56 @@
 #pragma once
 #include <iostream>
 #include "DxLib.h"
-#include "playerstatas.hpp"
+#include "playerstatus.hpp"
+#include "image.hpp"
 
-#define ENEMY_STATES_GLASS1 TEXT(".\\STATES\\OkaUmiushiStates.csv")
-#define ENEMY_STATES_GLASS2 TEXT(".\\STATES\\OkaUmiushiStates2.csv")
-#define ENEMY_STATES_GLASS3 TEXT(".\\STATES\\OkaUmiushiStates3.csv")
+#define ES_GLASS_OKAUMIUSHI TEXT(".\\STATES\\ENEMYSTATUS\\OKAUMIUSHI.csv")
+#define ES_GLASS_SURIMEUNKOU TEXT(".\\STATES\\ENEMYSTATUS\\SURIMEUNKOU.csv")
+#define ES_GLASS_GOLDUMIUSHI TEXT(".\\STATES\\ENEMYSTATUS\\GOLDUMIUSHI.csv")
+#define ES_GLASS_GREYLOTUS TEXT(".\\STATES\\ENEMYSTATUS\\GREYLOTUS.csv")
 
 class EnemyStates :public PlayerStates
 {
 public:
+	LOAD_SINGLE_IMAGE image;
 	VOID ENEMY_KIND_FLAG();//敵をランダムに選んでデータを読み込む関数
+	VOID ENEMY_BOSS_FLAG();
 };
+
+VOID EnemyStates::ENEMY_BOSS_FLAG()
+{
+	INPUT_STATES(ES_GLASS_GREYLOTUS);
+	image.LOADING_IMAGE(IMAGE_ENEMY_GREYLOTUS);
+}
 
 VOID EnemyStates::ENEMY_KIND_FLAG()
 {
 	int kindflag = GetRand(100);
 	if (kindflag > 80)
 	{
-		INPUT_STATES(ENEMY_STATES_GLASS1);
+		//ゴールドウミウシ
+		INPUT_STATES(ES_GLASS_GOLDUMIUSHI);
+		image.LOADING_IMAGE(IMAGE_ENEMY_GOLDUMIUSHI);
 		return;
 	}
 	else if (kindflag > 30)
 	{
-		INPUT_STATES(ENEMY_STATES_GLASS2);
+		//オカウミウシ　40%
+		INPUT_STATES(ES_GLASS_OKAUMIUSHI);
+		image.LOADING_IMAGE(IMAGE_ENEMY_OKAUMIUSHI);
 		return;
 	}
 	else 
 	{
-		INPUT_STATES(ENEMY_STATES_GLASS3);
+		//スライムアンコウ　30%
+		INPUT_STATES(ES_GLASS_SURIMEUNKOU);
+		image.LOADING_IMAGE(IMAGE_ENEMY_SURIMEUNKOU);
 		return;
 	}
+	//else
+	//{
+	//	//キョウリョウバッタ　
+	//	INPUT_STATES()
+ //   }
 }
 

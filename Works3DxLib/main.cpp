@@ -7,8 +7,9 @@
 #include "hitbox.hpp"
 #include "battleUI.hpp"
 #include "enemystatas.hpp"
-#include "playerstatas.hpp"
+#include "playerstatus.hpp"
 #include "BATTLEEFFECT.hpp"
+#include "mykey_input.hpp"
 #include "Item.hpp"
 #include "music.hpp"
 #include "StatesUI.hpp"
@@ -17,6 +18,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "ChangingTime.hpp"
 
 using namespace std;
 
@@ -73,6 +75,9 @@ VOID DRAW_MESSAGE(int);
 VOID RESIZING_SAMPLE_MAP(VOID);
 VOID RESIZING_VILLAGE_MAP(VOID);
 VOID RESIZING_FOREST_MAP(VOID);
+BOOL LOADING_FOREST_COORDINATES(VOID);
+BOOL LOADING_DATA_SLOT(int); //セーブスロットからデータをロードする
+
 
 PlayerStates Pstates;
 EnemyStates Estates;
@@ -104,6 +109,8 @@ MUSIC BTSEENnor;
 MUSIC BTcar, BTenter;
 MUSIC OverBGM;
 MUSIC TitleBGM;
+CHANGE_TIME ChangeT;
+KEYINPUT KEY;
 
 int GameScene;//ゲームシーンを管理する
 int Message;//メッセージを管理
@@ -162,6 +169,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Pstates.INPUT_STATES(PLAYER_STATES);
 	Pstates.IAI.INPUT_SKILL(PLAYER_SKILL_IAI_DATA);
 	Pstates.IAI.REGISTER_SKILL();
+	//仮データ
+	Pstates.bufLOADINGDATA(0, PLAYER_SAVE1_PSTATUS, PLAYER_SAVE1_PLAYTIME);
+	Pstates.PLAYTIME_STATE();
+	MAPUND.LOADING_MAP_TAG(0, MAP_TAG_1);
+
+	item.INPUTITEM_HEAL(ITEM_FILE_PATH);
 	//無限ループ
 	while (TRUE)
 	{
@@ -222,45 +235,148 @@ VOID MY_START()
 
 VOID MY_START_PROC()
 {
-	F_UI.C_count++;
-	F_UI.E_count++;
 	if (CheckSoundMem(TitleBGM.handle) == 0)
 	{
 		ChangeVolumeSoundMem(255 * 50 / 100, TitleBGM.handle);	//50%の音量にする
 		PlaySoundMem(TitleBGM.handle, DX_PLAYTYPE_LOOP);
 	}
-
-	if (CheckHitKey(KEY_INPUT_UP) == TRUE && F_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
+	//はじめからとつづきからを選ぶ
+	switch (F_UI.Startflg)
 	{
-		if (F_UI.tag <= 0) {
+	case 0:
+		switch (F_UI.Movelogoflg)
+		{
+		case 0:
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+			{
+				if (F_UI.tag == 0) {
+					F_UI.tag = 1;
+				}
+				else
+				{
+					F_UI.tag -= 1;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+			{
+				if (F_UI.tag == 1) {
+					F_UI.tag = 0;
+				}
+				else
+				{
+					F_UI.tag += 1;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)
+			{
+				if (F_UI.tag == 0)
+				{
+					if (CheckSoundMem(TitleBGM.handle) != 0)
+					{
+						StopSoundMem(TitleBGM.handle);
+					}
+					PLAY_ENTER_SOUND(DX_PLAYTYPE_NORMAL);
+					Pstates.PLAYTIME_CALC_F();
+					GameScene = GAME_PLAY_SCENE;
+				}
+				if (F_UI.tag == 1)
+				{
+					PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+					F_UI.Movelogoflg = 1;
+				}
+			}
+			break;
+		case 1:
+			if (titlelogo.y > 20)
+			{
+				titlelogo.y -= 2;
+			}
+			else {
+				F_UI.Startflg = 1;
+			}
+			break;
+		}
+		break;
+	case 1:
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+		{
+			if (F_UI.DataTag == 0) { F_UI.DataTag = 2; }
+			else { F_UI.DataTag--; }
+		}
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+		{
+			if (F_UI.DataTag == 2) { F_UI.DataTag = 0; }
+			else { F_UI.DataTag++; }
+		}
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)
+		{
+			if (F_UI.DataTag == 0&&Pstates.bufFullTime[0]!=0)
+			{
+				LOADING_DATA_SLOT(MAPUND.MAPtag[0]);
+				Pstates.INPUT_PLAYER_PLACE(player.image.x, player.image.y, PLAYER_SAVE1_PLACE);
+				if (CheckSoundMem(TitleBGM.handle) != 0)
+				{
+					StopSoundMem(TitleBGM.handle);
+				}
+				PLAY_ENTER_SOUND(DX_PLAYTYPE_NORMAL);
+				Pstates.PLAYTIME_CALC_F();
+				GameScene = GAME_PLAY_SCENE;
+			}
+			if (F_UI.DataTag == 1 && Pstates.bufFullTime[1] != 0)
+			{
+				LOADING_DATA_SLOT(MAPUND.MAPtag[1]);
+				Pstates.INPUT_PLAYER_PLACE(player.image.x, player.image.y, PLAYER_SAVE2_PLACE);
+				if (CheckSoundMem(TitleBGM.handle) != 0)
+				{
+					StopSoundMem(TitleBGM.handle);
+				}
+				PLAY_ENTER_SOUND(DX_PLAYTYPE_NORMAL);
+				GameScene = GAME_PLAY_SCENE;
+			}
+			if (F_UI.DataTag == 2 && Pstates.bufFullTime[2] != 0)
+			{
+				LOADING_DATA_SLOT(MAPUND.MAPtag[2]);
+				Pstates.INPUT_PLAYER_PLACE(player.image.x, player.image.y, PLAYER_SAVE3_PLACE);
+				if (CheckSoundMem(TitleBGM.handle) != 0)
+				{
+					StopSoundMem(TitleBGM.handle);
+				}
+				PLAY_ENTER_SOUND(DX_PLAYTYPE_NORMAL);
+				GameScene = GAME_PLAY_SCENE;
+			}
+		}
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
+		{
+			F_UI.Startflg = 2;
+		}
+		if(F_UI.DataTag==0)
+		{
+			F_UI.Carsolx = F_UI.SaveData1x, F_UI.Carsolx2 = F_UI.SaveData1x2,
+			F_UI.Carsoly = F_UI.SaveData1y, F_UI.Carsoly2 = F_UI.SaveData1y2;
+		}
+		if (F_UI.DataTag == 1)
+		{
+			F_UI.Carsolx = F_UI.SaveData1x, F_UI.Carsolx2 = F_UI.SaveData1x2,
+			F_UI.Carsoly = F_UI.SaveData2y, F_UI.Carsoly2 = F_UI.SaveData2y2;
+		}
+		if (F_UI.DataTag == 2)
+		{
+			F_UI.Carsolx = F_UI.SaveData1x, F_UI.Carsolx2 = F_UI.SaveData1x2,
+			F_UI.Carsoly = F_UI.SaveData3y, F_UI.Carsoly2 = F_UI.SaveData3y2;
+		}
+		break;
+	case 2:
+		if (titlelogo.y < 150)
+		{
+			titlelogo.y += 2;
+		}
+		else {
+			F_UI.DataTag = 0;
 			F_UI.tag = 0;
+			F_UI.Movelogoflg = 0;
+			F_UI.Startflg = 0;
 		}
-		else
-		{
-			F_UI.C_count = 0;
-			F_UI.tag -= 1;
-		}
-	}
-	if (CheckHitKey(KEY_INPUT_DOWN) == TRUE && F_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-	{
-		if (F_UI.tag >=1) {
-			F_UI.tag = 1;
-		}
-		else
-		{
-			F_UI.C_count = 0;
-			F_UI.tag += 1;
-		}
-	}
-
-	if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
-	{
-		if (CheckSoundMem(TitleBGM.handle) != 0)
-		{
-			StopSoundMem(TitleBGM.handle);
-		}
-		PLAY_ENTER_SOUND(DX_PLAYTYPE_NORMAL);
-		GameScene = GAME_PLAY_SCENE;
+		break;
 	}
 
 	return;
@@ -268,14 +384,450 @@ VOID MY_START_PROC()
 VOID MY_START_DRAW()
 {
 	DrawGraph(title.x, title.y, title.handle, TRUE);
-	DrawGraph(titlelogo.x, 150, titlelogo.handle, TRUE);
-	int Nsize=GetDrawStringWidthToHandle("はじめから",11,tanu30n.handle);
-	DrawFormatStringToHandle(GAME_WIDTH/2-Nsize/2, 400, C.Black, tanu30n.handle, "はじめから");
-	int Lsize = GetDrawStringWidthToHandle("つづきから", 11, tanu30n.handle);
-	DrawFormatStringToHandle(GAME_WIDTH / 2 - Lsize / 2, 500, C.Black, tanu30n.handle, "つづきから");
+	DrawGraph(titlelogo.x, titlelogo.y, titlelogo.handle, TRUE);
+	switch (F_UI.Startflg) {
+	case 0:
+		if (F_UI.tag == 0)
+		{
+			int Nsize = GetDrawStringWidthToHandle("はじめから", 11, tanu30n.handle);
+			DrawFormatStringToHandle(GAME_WIDTH / 2 - Nsize / 2, 400, C.Black, tanu30n.handle, "はじめから");
+			int Lsize = GetDrawStringWidthToHandle("つづきから", 11, tanu20n.handle);
+			DrawFormatStringToHandle(GAME_WIDTH / 2 - Lsize / 2, 500, C.Black, tanu20n.handle, "つづきから");
+		}
+		if (F_UI.tag == 1)
+		{
+			int Nsize = GetDrawStringWidthToHandle("はじめから", 11, tanu20n.handle);
+			DrawFormatStringToHandle(GAME_WIDTH / 2 - Nsize / 2, 400, C.Black, tanu20n.handle, "はじめから");
+			int Lsize = GetDrawStringWidthToHandle("つづきから", 11, tanu30n.handle);
+			DrawFormatStringToHandle(GAME_WIDTH / 2 - Lsize / 2, 500, C.Black, tanu30n.handle, "つづきから");
+		}
+		break;
+	case 1:
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA,220);
+		DrawBox(F_UI.SaveData1x, F_UI.SaveData1y, F_UI.SaveData1x2, F_UI.SaveData1y2, C.White, TRUE);
+		DrawBox(F_UI.SaveData1x, F_UI.SaveData2y, F_UI.SaveData1x2, F_UI.SaveData2y2, C.White, TRUE);
+		DrawBox(F_UI.SaveData1x, F_UI.SaveData3y, F_UI.SaveData1x2, F_UI.SaveData3y2, C.White, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+
+		DrawBox(F_UI.Carsolx, F_UI.Carsoly, F_UI.Carsolx2, F_UI.Carsoly2, C.Red, FALSE);
+
+		if (Pstates.bufFullTime[0] == 0)
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+		}
+		else
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData1y + 5, C.Black, tanu30n.handle, "セーブデータ1");
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 70, C.Black, tanu20n.handle, "プレイ時間%02d:%02d:%02d", 
+				Pstates.bhour[0], Pstates.bminutes[0],Pstates.bsecond[0]);
+		}
+
+		if (Pstates.bufFullTime[1] == 0)
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+		}
+		else
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData2y + 5, C.Black, tanu30n.handle, "セーブデータ2");
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+		}
+
+		if (Pstates.bufFullTime[2] == 0)
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+		}
+		else
+		{
+			DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData3y + 5, C.Black, tanu30n.handle, "セーブデータ3");
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+			DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+		}
+		break;
+	}
 	DrawFormatStringToHandle(0, 0, C.White, tanu30n.handle, "*画像は開発中のものです（本編では差し替えます）");
 	return;
 }
+
+VOID MY_STATES()
+{
+	MY_STATES_PROC();
+	MY_STATES_DRAW();
+	return;
+}
+
+VOID MY_STATES_PROC()
+{
+	//0=ステータス画面
+	//1=セーブ画面
+
+	//セーブ画面表示のためにデータを読み込む
+	/*Pstates.bufLOADINGDATA(0, PLAYER_SAVE1_PSTATUS, PLAYER_SAVE1_PLAYTIME);*/
+
+
+
+	switch (categori)
+	{
+	case 0:
+		//プレイ画面とステータス画面を切り替える
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_ESCAPE)==0)
+		{
+			GameScene = GAME_PLAY_SCENE;
+		}
+		//カテゴリの枠を変える
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT) == 0)
+		{
+			S_UI.Ctag += 1;
+			if (S_UI.Ctag >= 3)
+			{
+				S_UI.Ctag = 3;
+			}
+		}
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0)
+		{
+			S_UI.Ctag -= 1;
+			if (S_UI.Ctag <= 0)
+			{
+				S_UI.Ctag = 0;
+			}
+		}
+		if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)//エンターを押すとカテゴリ内の処理へ移動
+		{
+			if (S_UI.Ctag == 0) {};
+			if (S_UI.Ctag == 1) { categori = 1; cateprocess = 1; }
+			if (S_UI.Ctag == 2) { categori = 1; cateprocess = 2; }//セーブ処理へ
+		}
+		//カーソルの位置を移動
+		if (S_UI.Ctag == 0) { S_UI.CarsolX = S_UI.StatusX, S_UI.CarsolX2 = S_UI.StatusX2; }
+		if (S_UI.Ctag == 1) { S_UI.CarsolX = S_UI.ItemX, S_UI.CarsolX2 = S_UI.ItemX2; }
+		if (S_UI.Ctag == 2) { S_UI.CarsolX = S_UI.SaveX, S_UI.CarsolX2 = S_UI.SaveX2; }
+		if (S_UI.Ctag == 3) { S_UI.CarsolX = S_UI.LoadX, S_UI.CarsolX2 = S_UI.LoadX2; }
+		break;
+	case 1:
+		switch (cateprocess)
+		{
+		case 1:
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+			{
+				if (S_UI.Itemtag ==ITEMNUM-2||S_UI.Itemtag == ITEMNUM-1){}
+				else
+				{
+					S_UI.ICarsolY += 30, S_UI.ICarsolY2 += 30;
+					S_UI.Itemtag += 2;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+			{
+				if (S_UI.Itemtag ==0|| S_UI.Itemtag == 1){}
+				else
+				{
+					S_UI.ICarsolY -= 30, S_UI.ICarsolY2 -= 30;
+					S_UI.Itemtag -= 2;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0)
+			{
+				if (S_UI.Itemtag % 2 != 0)
+				{
+					S_UI.ICarsolX -= 300, S_UI.ICarsolX2 -= 300;
+					S_UI.Itemtag -= 1;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT) == 0)
+			{
+				if (S_UI.Itemtag % 2 == 0)
+				{
+					S_UI.ICarsolX += 300, S_UI.ICarsolX2 += 300;
+					S_UI.Itemtag += 1;
+				}
+			}
+			if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
+			{
+				S_UI.ICarsolX = 45, S_UI.ICarsolY = 95;
+				S_UI.ICarsolX2 = 45+275, S_UI.ICarsolY2 = 125;
+				S_UI.Itemtag = 0;
+				categori = 0;
+			}
+
+			break;
+		case 2://セーブ処理
+			switch (S_UI.SavingStch)
+			{
+			case 0:
+				if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+				{
+					if (S_UI.Savetag > 2) { S_UI.Savetag = 2; }
+					else {
+						S_UI.Savetag++;
+					}
+				}
+				if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+				{
+					if (S_UI.Savetag < 0) { S_UI.Savetag = 0; }
+					else {
+						S_UI.Savetag--;
+					}
+				}
+				if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)//セーブする
+				{
+					if (S_UI.Savetag == 0)
+					{
+						Pstates.SAVE_STATES(PLAYER_SAVE1_PSTATUS);
+						Pstates.SAVE_PLAYTIME(PLAYER_SAVE1_PLAYTIME);
+						Pstates.SAVE_PLAYER_PLACE(player.image.x, player.image.y, PLAYER_SAVE1_PLACE);
+						MAPUND.SAVE_MAP(TATE_MAX, YOKO_MAX, MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1, MAP_TAG_1);
+						S_UI.SavingStch = 1;
+					}
+					if (S_UI.Savetag == 1)
+					{
+						/*Pstates.SAVE_STATES(PLAYER_SAVE2_PSTATUS);*/
+					}
+					if (S_UI.Savetag == 2)
+					{
+					}
+				}
+				break;
+			case 1:
+				
+				break;
+			}
+			break;
+		}
+		break;
+	case 2:
+		switch (S_UI.CataEndtag)
+		{
+		case 2:
+			break;
+		}
+	}
+
+	return;
+}
+VOID MY_STATES_DRAW()
+{
+	float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
+	float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
+	float c = ((float)Pstates.EXP / (float)Pstates.EXPMAX) * 300;
+	int Color = GetColor(255, 255, 255);
+	DrawGraph(0, 0, S_UI.back.handle, TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
+	DrawGraph(15, 80, S_UI.back2.handle, TRUE);
+	DrawBox(S_UI.StatusX, S_UI.UIY, S_UI.StatusX2, S_UI.UIY2, GetColor(255, 0, 0), TRUE);
+	DrawBox(S_UI.ItemX, S_UI.UIY, S_UI.ItemX2, S_UI.UIY2, GetColor(255, 0, 0), TRUE);
+	DrawBox(S_UI.SaveX, S_UI.UIY, S_UI.SaveX2, S_UI.UIY2, GetColor(255, 0, 0), TRUE);
+	DrawBox(S_UI.LoadX, S_UI.UIY, S_UI.LoadX2, S_UI.UIY2, GetColor(255, 0, 0), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+	DrawFormatStringToHandle(10 + 30, 15 + 13, C.White, tanu30n.handle, "ステータス");
+	DrawFormatStringToHandle(10 + 220 + 20 + 45, 15 + 13, C.White, tanu30n.handle, "アイテム");
+	DrawFormatStringToHandle(10 + 440 + 40 + 60, 15 + 13, C.White, tanu30n.handle, "セーブ");
+	DrawFormatStringToHandle(10 + 660 + 60 + 60, 15 + 13, C.White, tanu30n.handle, "ロード");
+
+	DrawBox(S_UI.CarsolX, S_UI.CarsolY, S_UI.CarsolX2, S_UI.CarsolY2, C.White, FALSE);
+	switch (categori)
+	{
+	case 0:
+		switch (S_UI.Ctag)
+		{
+		case 0://ステータス
+			DrawGraph(GAME_WIDTH - S_UI.charaimg.width - 20, 124 - 5,
+				S_UI.charaimg.handle, TRUE);
+
+			DrawFormatStringToHandle(S_UI.STallx, 90
+				, Color, tanu30n.handle, "狐耳族:%s", Pstates.Name);
+			DrawFormatStringToHandle(S_UI.STallx, 130
+				, Color, tanu20n.handle, "Lv %4d", Pstates.Lv);
+
+			DrawBox(S_UI.STallx + 100, 160, S_UI.STallx + 100 + 2 + 100, 180, GetColor(255, 255, 255), TRUE);
+			DrawBox(S_UI.STallx + 2 + 100, 160 + 2, S_UI.STallx + (int)a - 2 + 100, 180 - 2, C.HPColorN, TRUE);
+
+			DrawFormatStringToHandle(S_UI.STallx, 160
+				, Color, tanu20n.handle, "HP %d/%d", Pstates.HP, Pstates.HPMAX);
+
+			DrawBox(S_UI.STallx + 100, 190, S_UI.STallx + 100 + 2 + 100, 210, GetColor(255, 255, 255), TRUE);
+			DrawBox(S_UI.STallx + 2 + 100, 190 + 2, S_UI.STallx + (int)b - 2 + 100, 210 - 2, C.MPColor, TRUE);
+
+			DrawFormatStringToHandle(S_UI.STallx, 190
+				, Color, tanu20n.handle, "MP %d/%d", Pstates.MP, Pstates.MPMAX);
+			DrawFormatStringToHandle(S_UI.STallx, 220
+				, Color, tanu20n.handle, "物理攻撃力 %d(+%d)", Pstates.AT, Pstates.STR);
+			DrawFormatStringToHandle(S_UI.STallx + 200, 220
+				, Color, tanu20n.handle, "魔法攻撃力 %d(+%d)", Pstates.MAT, Pstates.MSTR);
+			DrawFormatStringToHandle(S_UI.STallx, 250
+				, Color, tanu20n.handle, "物理防御力 %d", Pstates.DF);
+			DrawFormatStringToHandle(S_UI.STallx + 200, 250
+				, Color, tanu20n.handle, "魔法防御力 %d", Pstates.MDF);
+			DrawFormatStringToHandle(S_UI.STallx, 280
+				, Color, tanu20n.handle, "すばやさ %d", Pstates.AGI);
+			DrawFormatStringToHandle(S_UI.STallx, 310
+				, Color, tanu20n.handle, "次のレベルまで %dExp", Pstates.EXPMAX - Pstates.EXP);
+			DrawBox(S_UI.STallx - 2, 335 - 2, S_UI.STallx + 300 + 2, 340 + 2, GetColor(255, 255, 255), TRUE);
+			DrawBox(S_UI.STallx, 335, S_UI.STallx + (int)c, 340, C.HPColorN, TRUE);
+			break;
+		case 1://アイテム
+			for (int i = 0; i < ITEMNUM; i++)
+			{
+				if (i % 2 == 0)//偶数の時
+				{
+					DrawFormatStringToHandle(S_UI.ItemPosX, S_UI.ItemPosY, Color, tanu20n.handle, "%s",
+						item.Name[i]);
+					DrawFormatStringToHandle(S_UI.ItemPosX+200, S_UI.ItemPosY, Color, tanu20n.handle, "x %3d",
+						item.have[i]);
+				}
+				else {
+					DrawFormatStringToHandle(S_UI.ItemPosX + 300, S_UI.ItemPosY, Color, tanu20n.handle, "%s",
+						item.Name[i]);
+					DrawFormatStringToHandle(S_UI.ItemPosX + 200+300, S_UI.ItemPosY, Color, tanu20n.handle, "x %3d",
+						item.have[i]);
+					S_UI.ItemPosY += 30;
+				}
+			}
+			S_UI.ItemPosY = 100;
+			break;
+		case 2://セーブ
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 220);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData1y, F_UI.SaveData1x2, F_UI.SaveData1y2, C.White, TRUE);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData2y, F_UI.SaveData1x2, F_UI.SaveData2y2, C.White, TRUE);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData3y, F_UI.SaveData1x2, F_UI.SaveData3y2, C.White, TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+
+			DrawBox(F_UI.Carsolx, F_UI.Carsoly, F_UI.Carsolx2, F_UI.Carsoly2, C.Red, FALSE);
+			if (Pstates.bufFullTime[0] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData1y + 5, C.Black, tanu30n.handle, "セーブデータ1");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 70, C.Black, tanu20n.handle, "プレイ時間%02d:%02d:%02d",
+					Pstates.bhour[0], Pstates.bminutes[0], Pstates.bsecond[0]);
+			}
+
+			if (Pstates.bufFullTime[1] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData2y + 5, C.Black, tanu30n.handle, "セーブデータ2");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+			}
+
+			if (Pstates.bufFullTime[2] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData3y + 5, C.Black, tanu30n.handle, "セーブデータ3");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+			}
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case 1:
+		switch (cateprocess)
+		{
+		case 1:
+			for (int i = 0; i < ITEMNUM; i++)
+			{
+				if (i % 2 == 0)//偶数の時
+				{
+					DrawFormatStringToHandle(S_UI.ItemPosX, S_UI.ItemPosY, Color, tanu20n.handle, "%s",
+						item.Name[i]);
+					DrawFormatStringToHandle(S_UI.ItemPosX + 200, S_UI.ItemPosY, Color, tanu20n.handle, "x %3d",
+						item.have[i]);
+				}
+				else {
+					DrawFormatStringToHandle(S_UI.ItemPosX + 300, S_UI.ItemPosY, Color, tanu20n.handle, "%s",
+						item.Name[i]);
+					DrawFormatStringToHandle(S_UI.ItemPosX + 200 + 300, S_UI.ItemPosY, Color, tanu20n.handle, "x %3d",
+						item.have[i]);
+					S_UI.ItemPosY += 30;
+				}
+			}
+			S_UI.ItemPosY = 100;
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, S_UI.ItemBrend);
+
+			DrawBox(S_UI.ICarsolX, S_UI.ICarsolY, S_UI.ICarsolX2, S_UI.ICarsolY2, C.White, FALSE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+			DrawFormatStringToHandle(S_UI.ItemPosX+600, S_UI.ItemPosY, Color, tanu20n.handle, "%s",item.Name[S_UI.Itemtag]);
+			DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY+30, C.HPColorN, tanu20n.handle, "HP回復量:%3d",
+				item.healHP[S_UI.Itemtag]);
+			DrawFormatStringToHandle(S_UI.ItemPosX + 600+150, S_UI.ItemPosY + 30, C.MPColor, tanu20n.handle, "MP回復量:%3d",
+				item.healMP[S_UI.Itemtag]);
+			DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY + 60, C.BufColor, tanu20n.handle, "バフ効果: %s",
+				item.goodStatus[S_UI.Itemtag]);
+			DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY + 80, C.DeBufColor, tanu20n.handle, "デバフ効果: %s",
+				item.badStatus[S_UI.Itemtag]);
+			DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY + 110, Color, tanu20n.handle, "売値:%4d銭\n買値:%4d銭",
+				item.sell[S_UI.Itemtag], item.buy[S_UI.Itemtag]);
+			for (int i = 0; i < 5; i++)
+			{
+				DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY + 160, Color, tanu20n.handle, "%s",
+					item.Expl2[S_UI.Itemtag][i]);
+				S_UI.ItemPosY += 25;
+			}
+			S_UI.ItemPosY -= 25*5;
+			/*DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY+30, Color, tanu20n.handle, "%s", item.Expl[S_UI.Itemtag]);*/
+			S_UI.ChengingBrend_Item();
+			break;
+		case 2:
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 220);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData1y, F_UI.SaveData1x2, F_UI.SaveData1y2, C.White, TRUE);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData2y, F_UI.SaveData1x2, F_UI.SaveData2y2, C.White, TRUE);
+			DrawBox(F_UI.SaveData1x, F_UI.SaveData3y, F_UI.SaveData1x2, F_UI.SaveData3y2, C.White, TRUE);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+			DrawBox(F_UI.Carsolx, F_UI.Carsoly, F_UI.Carsolx2, F_UI.Carsoly2, C.Red, FALSE);
+			if (Pstates.bufFullTime[0] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData1y + 5, C.Black, tanu30n.handle, "セーブデータ1");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData1y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+			}
+
+			if (Pstates.bufFullTime[1] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData2y + 5, C.Black, tanu30n.handle, "セーブデータ2");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData2y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+			}
+
+			if (Pstates.bufFullTime[2] == 0)
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "セーブデータがありません");
+			}
+			else
+			{
+				DrawFormatStringToHandle(F_UI.SaveData1x + 10, F_UI.SaveData3y + 5, C.Black, tanu30n.handle, "セーブデータ3");
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 40, C.Black, tanu20n.handle, "%s Lv:%d", Pstates.Name, Pstates.bufLLv[0]);
+				DrawFormatStringToHandle(F_UI.SaveData1x + 30, F_UI.SaveData3y + 70, C.Black, tanu20n.handle, "プレイ時間%d", Pstates.bufFullTime[0]);
+			}
+			break;
+		}
+		break;
+	}
+	return;
+}
+
 
 VOID MY_LOAD_MAP()
 {
@@ -310,7 +862,6 @@ VOID MY_PLAY()
 
 VOID MY_PLAY_PROC()
 {
-	S_UI.S_count++;
 	if (CheckSoundMem(PlayBGM.handle) == 0)
 	{
 		//BGMの音量を下げる
@@ -318,21 +869,18 @@ VOID MY_PLAY_PROC()
 		PlaySoundMem(PlayBGM.handle, DX_PLAYTYPE_LOOP);
 	}
 
-
-	if (CheckHitKey(KEY_INPUT_ESCAPE) == TRUE &&S_UI.CHECK_CHENGE_COUNT_STorPLY()==TRUE )//ステータス画面に移動
+	if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_ESCAPE)==0)//ステータス画面に移動
 	{
-		S_UI.S_count = 0;
 		GameScene = GAME_STATES_SCENE;
 	}
 
-	if (CheckHitKey(KEY_INPUT_RETURN) == TRUE && S_UI.CHECK_CHENGE_COUNT_STorPLY() == TRUE)//ステータス画面に移動
+	if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)//イベント画面に移動
 	{
-		S_UI.S_count = 0;
 		GameScene = GAME_EVENT_SCENE;
 	}
 	//プレイヤーの当たり判定を設定
 	player.coll.left = player.image.x+5;
-	player.coll.top = player.image.y+10;
+	player.coll.top = player.image.y+25;
 	player.coll.right = player.image.x + player.image.width-5;
 	player.coll.bottom = player.image.y + player.image.height;
 
@@ -341,11 +889,13 @@ VOID MY_PLAY_PROC()
 	player.OldY = player.image.y;
 	if (CheckHitKey(KEY_INPUT_UP) == TRUE)
 	{
-		player.Nowhandle = player.image.Divhandle[10];
+		player.MOVE_CHARA_CHIP_UP();
+		player.Nowhandle = player.image.Divhandle[player.charahandle];
 		player.coll.top -= 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll,TATE_MAX,YOKO_MAX,GameScene) == TRUE){}
 		else{ player.image.y -= 5; }
-		if (MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX) == 1)
+		int ENEMY_COLL = MAPEN.MY_CHECK_ENEMY_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX);
+		if (ENEMY_COLL== 1)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
@@ -355,6 +905,19 @@ VOID MY_PLAY_PROC()
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;}
+		if (ENEMY_COLL == 2)
+		{
+			if (CheckSoundMem(PlayBGM.handle) != 0)
+			{
+				StopSoundMem(PlayBGM.handle);	//BGMを止める
+			}
+			if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC_BOSS) == FALSE);
+			if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK_NUMA) == FALSE);
+			Estates.ENEMY_BOSS_FLAG();
+			INPUTBTLSTATES_BUF();
+			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
+			GameScene = GAME_BATTLE_SCENE;
+		}
 		if (MAPON.y[0][0] < 0 && player.image.y < 100)
 		{
 			player.image.y = player.OldY;
@@ -379,7 +942,8 @@ VOID MY_PLAY_PROC()
 
 	if (CheckHitKey(KEY_INPUT_LEFT) == TRUE )
 	{
-		player.Nowhandle = player.image.Divhandle[4];
+		player.MOVE_CHARA_CHIP_LEFT();
+		player.Nowhandle = player.image.Divhandle[player.charahandle];
 		player.coll.left -= 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE)
 		{}
@@ -418,9 +982,11 @@ VOID MY_PLAY_PROC()
 			}
 		}
 	}
-	if (CheckHitKey(KEY_INPUT_DOWN) == TRUE)
+
+	if (KEY.KEYINPUT_NORMAL(KEY_INPUT_DOWN)==0)
 	{
-		player.Nowhandle = player.image.Divhandle[1];
+		player.MOVE_CHARA_CHIP_DOWN();
+		player.Nowhandle = player.image.Divhandle[player.charahandle];
 		player.coll.bottom += 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE)
 		{}
@@ -456,11 +1022,12 @@ VOID MY_PLAY_PROC()
 				}
 			}
 		}
-
 	}
+
 	if (CheckHitKey(KEY_INPUT_RIGHT) == TRUE)
 	{
-		player.Nowhandle = player.image.Divhandle[7];
+		player.MOVE_CHARA_CHIP_RIGHT();
+		player.Nowhandle = player.image.Divhandle[player.charahandle];
 		player.coll.right += 5;
 		if (MAPHIT.MY_CHECK_MAP1_PLAYER_COLL(player.coll, TATE_MAX, YOKO_MAX, GameScene) == TRUE){}
 		else { player.image.x += 5; }
@@ -499,6 +1066,7 @@ VOID MY_PLAY_PROC()
 	if (player.image.x > GAME_WIDTH-divmap.width) { player.image.x = GAME_WIDTH - divmap.width; }
 	if (player.image.y < 0) { player.image.y = 0; }
 	if (player.image.y > GAME_HEIGHT - divmap.height) { player.image.y = GAME_HEIGHT - divmap.height; }
+	MAPMID.INTARACTIV_MAP(TATE_MAX, YOKO_MAX);
 	return;
 }
 
@@ -557,163 +1125,25 @@ VOID MY_PLAY_DRAW()
 		//		TRUE);
 		//}
 	}
-//	for (int tate = 0; tate < TATE_MAX; tate++)
-//{
-//	for (int yoko = 0; yoko < YOKO_MAX; yoko++)
-//	{
-//		//壁ならば
-//		if (MAPHIT.kind[tate][yoko] == 63)
-//		{
-//			DrawBox(MAPHIT.Hitmap[tate][yoko].left, MAPHIT.Hitmap[tate][yoko].top,
-//				MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
-//		}
-//
-//	}
-//}
-//	DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
-	return;
-}
+	//for (int tate = 0; tate < TATE_MAX; tate++)
+	//{
+	//	for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+	//	{
+	//		//壁ならば
+	//		if (MAPHIT.kind[tate][yoko] == 63)
+	//		{
+	//		DrawBox(MAPHIT.Hitmap[tate][yoko].left, MAPHIT.Hitmap[tate][yoko].top,
+	//			MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
+	//		}
 
-VOID MY_STATES()
-{
-	MY_STATES_PROC();
-	MY_STATES_DRAW();
-	return;
-}
-
-VOID MY_STATES_PROC()
-{
-	//0=ステータス画面
-	//1=セーブ画面
-
-	switch (categori)
-	{
-	case 0:
-		//プレイ画面とステータス画面を切り替える
-		S_UI.S_count++;
-		S_UI.C_count++;
-		if ((CheckHitKey(KEY_INPUT_ESCAPE) == TRUE) && S_UI.CHECK_CHENGE_COUNT_STorPLY() == TRUE)
-		{
-			S_UI.S_count = 0;
-			GameScene = GAME_PLAY_SCENE;
-		}
-		//カテゴリの枠を変える
-		if ((CheckHitKey(KEY_INPUT_RIGHT) == TRUE) && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-		{
-			S_UI.Ctag += 1;
-			S_UI.C_count = 0;
-			if (S_UI.Ctag >= 4)
-			{
-				S_UI.Ctag = 4;
-			}
-		}
-		if (CheckHitKey(KEY_INPUT_LEFT) == TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-		{
-			S_UI.Ctag -= 1;
-			S_UI.C_count = 0;
-			if (S_UI.Ctag <= 0)
-			{
-				S_UI.Ctag = 0;
-			}
-		}
-		if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)//エンターを押すとカテゴリ内の処理へ移動
-		{
-			S_UI.S_count=0;
-			S_UI.C_count=0;
-			if (S_UI.Ctag == 0) {};
-			if (S_UI.Ctag == 1) { categori = 1; cateprocess = 1; }//セーブ処理へ
-		}
-		break;
-	case(1):
-		switch(cateprocess)
-		{
-		case(1)://セーブ処理
-			S_UI.C_count++;
-			if (CheckHitKey(KEY_INPUT_DOWN)==TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-			{
-				if (S_UI.Savetag > 2) { S_UI.Savetag = 2; }
-				else {
-					S_UI.C_count = 0;
-					S_UI.Savetag++;
-				}
-			}
-			if (CheckHitKey(KEY_INPUT_UP)==TRUE && S_UI.CHECK_CHENGE_COUNT_CATEGORY() == TRUE)
-			{
-				if (S_UI.Savetag < 0) { S_UI.Savetag = 0; }
-				else {
-					S_UI.C_count = 0;
-					S_UI.Savetag--;
-				}
-			}
-			if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)
-			{
-				if(S_UI.Savetag == 0)
-				{
-					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT0);
-				}
-				if (S_UI.Savetag == 1)
-				{
-					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT1);
-				}
-				if (S_UI.Savetag == 2)
-				{
-					Pstates.SAVE_STATES(PLAYER_SAVE_SLOT2);
-				}
-			}
-		}
-		break;
-	}
-
-	return;
-}
-VOID MY_STATES_DRAW()
-{
-	float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
-	float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
-	float c= ((float)Pstates.EXP / (float)Pstates.EXPMAX) * 300;
-	int Color = GetColor(255, 255, 255);
-	DrawGraph(0, 0, S_UI.back.handle, TRUE);
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 200);
-	DrawGraph(15, 80, S_UI.back2.handle, TRUE);
-	SetDrawBlendMode(DX_BLENDMODE_NOBLEND,0);
-	DrawGraph(15, 15, S_UI.UIimg.UIhandle[0], TRUE);
-	DrawGraph(252, 15, S_UI.UIimg.UIhandle[1], TRUE);
-	DrawGraph(488, 15, S_UI.UIimg.UIhandle[2], TRUE);
-	DrawGraph(725, 15, S_UI.UIimg.UIhandle[3], TRUE);
-	switch (categori)
-	{
-	case(0):
-		if (S_UI.Ctag == 0)
-		{
-			DrawGraph(GAME_WIDTH - S_UI.charaimg.width - 20, 124 - 5,
-				S_UI.charaimg.handle, TRUE);
-			DrawBox(S_UI.STallx - 2, S_UI.STallx - 2, S_UI.STallx + 100 + 2, 80 + 2, GetColor(255, 255, 255), TRUE);
-			DrawBox(S_UI.STallx, S_UI.STallx, S_UI.STallx + (int)a, 80, GetColor(0, 255, 0), TRUE);
-			DrawFormatStringToHandle(S_UI.STallx, 90
-				, Color, tanu30n.handle, "狐耳族:%s", Pstates.Name);
-			DrawFormatStringToHandle(S_UI.STallx, 90
-				, Color, tanu20n.handle, "Lv %4d", Pstates.Lv);
-			DrawFormatStringToHandle(S_UI.STallx, 130
-				, Color, tanu20n.handle, "HP %d/%d", Pstates.HP, Pstates.HPMAX);
-			DrawFormatStringToHandle(S_UI.STallx, 170
-				, Color, tanu20n.handle, "MP %d/%d", Pstates.MP, Pstates.MPMAX);
-			DrawFormatStringToHandle(S_UI.STallx, 210
-				, Color, tanu20n.handle, "物理攻撃力 %d(+%d)", Pstates.AT, Pstates.STR);
-			DrawFormatStringToHandle(S_UI.STallx, 250
-				, Color, tanu20n.handle, "物理防御力 %d", Pstates.DF);
-			DrawFormatStringToHandle(S_UI.STallx, 290
-				, Color, tanu20n.handle, "魔法防御力 %d", Pstates.MDF);
-			DrawFormatStringToHandle(S_UI.STallx, 330
-				, Color, tanu20n.handle, "すばやさ %d", Pstates.AGI);
-			DrawFormatStringToHandle(S_UI.STallx, 370
-				, Color, tanu20n.handle, "次のレベルまで %dExp", Pstates.EXPMAX - Pstates.EXP);
-			DrawBox(S_UI.STallx - 2, 405 - 2, S_UI.STallx + 300 + 2, 410 + 2, GetColor(255, 255, 255), TRUE);
-			DrawBox(S_UI.STallx, 405, S_UI.STallx + (int)c, 410, GetColor(0, 255, 0), TRUE);
-		}
-		break;
-	case(1):
-		break;
-	}
+	//	}
+	//}
+	//DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
+	ChangeT.ChangingLight();
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, int(ChangeT.Alpha));
+	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT,
+		GetColor(int(ChangeT.R), int(ChangeT.G), ChangeT.B), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	return;
 }
 
@@ -807,7 +1237,7 @@ VOID MY_BATTLE_PROC()
 				if (UI.UItag == 2) { Message = GUARD; }
 				if (UI.UItag == 3) { Message = SELECT_ITEM; }
 				if (UI.UItag == 4) { Message = RUN; }
-				if (CheckHitKey(KEY_INPUT_RETURN) == TRUE)//エンターを押したとき
+				if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN)==0)//エンターを押したとき
 				{
 					PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
 					Playerflag = 1;
@@ -1186,6 +1616,48 @@ VOID MY_BATTLE_PROC()
 				}
 				break;
 				case 3://アイテム
+					if(KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT)==0)
+					{
+						if (UI.Itemtag % 2 == 0)
+						{
+							UI.Itemtag += 1;
+							UI.ICarsolX += 260, UI.ICarsolX2 += 260;
+						}
+					}
+					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0)
+					{
+						if (UI.Itemtag % 2 != 0)
+						{
+							UI.Itemtag -= 1;
+							UI.ICarsolX -= 260, UI.ICarsolX2 -= 260;
+						}
+					}
+					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+					{
+						if (UI.Itemtag == 0 || UI.Itemtag == 1)
+						{}
+						else{
+							UI.Itemtag -= 2;
+							UI.ICarsolY -= 30, UI.ICarsolY2 -= 30;
+						}
+					}
+					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+					{
+						if (UI.Itemtag == ITEMNUM - 2 || UI.Itemtag == ITEMNUM - 1)
+						{}
+						{
+							UI.Itemtag += 2;
+							UI.ICarsolY += 30, UI.ICarsolY2 += 30;
+						}
+					}
+					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
+					{
+						UI.UItag = 0;
+						UI.Itemtag = 0;
+						UI.ICarsolX = 478, UI.ICarsolX2 = 480 + 210 + 2;
+						UI.ICarsolY = 398, UI.ICarsolY2 = 400+22;
+						Playerflag = 0;
+					}
 					break;
 				case 4://逃げる
 					Pstates.RUN_AWAY(Estates.AGI);
@@ -1341,18 +1813,16 @@ VOID MY_BATTLE_PROC()
 
 VOID MY_BATTLE_DRAW()
 {
-		int Ename=GetDrawFormatStringWidth("%s", Estates.Name);
+		int Ename=GetDrawFormatStringWidth("Lv:%d %s", Estates.Lv, Estates.Name);
 		SetDrawBright(UI.BrightR,UI.BrightG,UI.BrightB);//バトル画面の輝度
 		DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);//バトル画面の背景
 		
-		DrawGraph(enemy.x, 50, enemy.handle, TRUE);//エネミーの画像
-		DrawFormatStringToHandle(enemy.x+enemy.width/2-Ename/2, 50, GetColor(255, 255, 255), tanu20.handle,
-			"%s", Estates.Name);
+		DrawGraph(Estates.image.x, 50, Estates.image.handle, TRUE);//エネミーの画像
+		DrawFormatStringToHandle(Estates.image.x+Estates.image.width/2-Ename/2, 50, GetColor(255, 255, 255), tanu20.handle,
+			"Lv:%d %s", Estates.Lv,Estates.Name);//エネミーの名前
 		DrawGraph(250, 350, Bplayer.handle, TRUE);
 		DrawFormatStringToHandle(250, 370
 			, GetColor(255, 255, 255), tanu20.handle, "%s", Pstates.Name);
-		/*DrawGraph(player.x, player.y, player.handle, TRUE);*/
-		/*DrawBox(20, GAME_HEIGHT - 220, 220, GAME_HEIGHT-55, GetColor(255, 255, 0), TRUE);*/
 		//UI
 		DrawGraph(20, 370, UIback.handle, TRUE);
 		DrawGraph(UI.UIx[0], 380, UI.image.UIhandle[0], TRUE);//攻撃
@@ -1378,18 +1848,16 @@ VOID MY_BATTLE_DRAW()
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 			DRAW_MESSAGE(Message);
 		}
-		float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100;
-		float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100;
+		float a = ((float)Pstates.HP / (float)Pstates.HPMAX) * 100.0;
+		float b = ((float)Pstates.MP / (float)Pstates.MPMAX) * 100.0;
 
-		float c = ((float)Estates.HP / (float)Estates.HPMAX) * 100;
-		float d = ((float)Estates.MP / (float)Estates.MPMAX) * 100;
 		//自分のHP
 			DrawBox(350 - 2, 400 - 2, 350 + 100 + 2, 420 + 2, GetColor(242, 242, 242), TRUE);
-			DrawBox(350, 400, 350 + (int)a, 420, GetColor(0, 255, 95), TRUE);
+			DrawBox(350, 400, 350 + (int)a, 420, C.HPColorN, TRUE);
 			DrawFormatStringToHandle(350, 400
 				, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Pstates.HP, Pstates.HPMAX);
 			DrawBox(350 - 2, 425 - 2, 350 + 100 + 2, 445 + 2, GetColor(242, 242, 242), TRUE);
-			DrawBox(350, 425, 350 + (int)b, 445, GetColor(30, 144, 255), TRUE);
+			DrawBox(350, 425, 350 + (int)b, 445, C.MPColor, TRUE);
 			DrawFormatStringToHandle(350, 425
 				, C.White, tanu20.handle, "%d/%d", Pstates.MP, Pstates.MPMAX);
 			/*&& UI.UItag == 1)*/
@@ -1513,36 +1981,68 @@ VOID MY_BATTLE_DRAW()
 						}
 					}
 					break;
+				case 3:
+					for (int i = 0; i < ITEMNUM; i++)
+					{
+						if (i % 2 == 0)//偶数の時
+						{
+							DrawBox(UI.ItemPosX - 2, UI.ItemPosY - 2, 
+								UI.ItemPosX +210+ 2, UI.ItemPosY + 22, C.Red, TRUE);
+							DrawFormatStringToHandle(UI.ItemPosX, UI.ItemPosY, C.White, tanu20n.handle, "%s",
+								item.Name[i]);
+							DrawFormatStringToHandle(UI.ItemPosX + 150, UI.ItemPosY, C.White, tanu20n.handle, "x %3d",
+								item.have[i]);
+						}
+						else {
+							DrawBox(UI.ItemPosX+260 - 2, UI.ItemPosY - 2,
+								UI.ItemPosX +260+ 210 + 2, UI.ItemPosY + 22, C.Red, TRUE);
+							DrawFormatStringToHandle(UI.ItemPosX + 260, UI.ItemPosY, C.White, tanu20n.handle, "%s",
+								item.Name[i]);
+							DrawFormatStringToHandle(UI.ItemPosX + 150 + 260, UI.ItemPosY, C.White, tanu20n.handle, "x %3d",
+								item.have[i]);
+							UI.ItemPosY += 30;
+						}
+					}
+					UI.ChengingBrend_Item();
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, UI.ItemBrend);
+					DrawBox(UI.ICarsolX, UI.ICarsolY,
+						UI.ICarsolX2, UI.ICarsolY2, C.White, FALSE);
+					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+					UI.ItemPosY = 400;
+					break;
 				}
 				break;
 			}
+
+			float c = ((float)Estates.HP / (float)Estates.HPMAX) * 100.0;
+			float d = ((float)Estates.MP / (float)Estates.MPMAX) * 100.0;
 		DrawBox(350 - 2, 200 - 2, 350 + 100 + 2, 220 + 2, GetColor(255, 255, 255), TRUE);
 		DrawBox(350, 200, 350 + (int)c, 220, GetColor(0, 255, 0), TRUE);
 		DrawFormatStringToHandle(350, 200
 			, GetColor(255, 255, 255), tanu20.handle, "%d/%d", Estates.HP, Estates.HPMAX);
 		if (BEnorAT.isView == TRUE)//通常攻撃のエフェクト　
 		{
-			DrawGraph(enemy.x, enemy.y,
+			DrawGraph(Estates.image.x, Estates.image.y,
 				BEnorAT.image.Divhandle[BEnorAT.Viewimage], TRUE);
 		}
 		if (BEIAI.isView == TRUE)//スキルのエフェクト
 		{
-			DrawGraph(enemy.x, enemy.y,
+			DrawGraph(Estates.image.x, Estates.image.y,
 				BEIAI.image.Divhandle[BEIAI.Viewimage], TRUE);
 		}
 		if (BEKIKON.isView == TRUE)//スキルのエフェクト
 		{
-			DrawGraph(enemy.x, enemy.y,
+			DrawGraph(Estates.image.x, Estates.image.y,
 				BEKIKON.image.Divhandle[BEKIKON.Viewimage], TRUE);
 		}
 		if (BEKEN.isView == TRUE)//スキルのエフェクト
 		{
-			DrawGraph(enemy.x, enemy.y,
+			DrawGraph(Estates.image.x, Estates.image.y,
 				BEKEN.image.Divhandle[BEKEN.Viewimage], TRUE);
 		}
 		if (BEMAGIC.isView == TRUE)//スキルのエフェクト
 		{
-			DrawGraph(enemy.x, enemy.y,
+			DrawGraph(Estates.image.x, Estates.image.y,
 				BEMAGIC.image.Divhandle[BEMAGIC.Viewimage], TRUE);
 		}
 
@@ -1639,7 +2139,6 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	{
 		return FALSE;
 	}
-	if (enemy.LOADING_IMAGE(IMAGE_ENEMY1) == -1) { return FALSE; }
 	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return FALSE; }
 	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return FALSE; }
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_KOUGEKI, 0) == -1) { return FALSE; }
@@ -1649,6 +2148,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_RUN, 4) == -1) { return FALSE; }
 	//スタート画面
 	if (titlelogo.LOADING_IMAGE(IMAGE_START_ROGO) == -1) { return FALSE; }
+	titlelogo.y = 150;
 	//ステータス画面
 	if (S_UI.charaimg.LOADING_IMAGE(IMAGE_STATES_CHARA) == -1) { return FALSE; }
 	if (S_UI.UIimg.LOADING_IMAGE(IMAGE_STATES_UI_ST, 0) == -1) { return FALSE; }
@@ -1660,17 +2160,6 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	//イベント画面
 	if (eventS.txtUI.LOADING_IMAGE(IMAGE_EVENT_TXTUIBACK) == -1) { return FALSE; }
 	return TRUE;
-}
-
-VOID RESIZING_SAMPLE_MAP()
-{
-	MAPHIT.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPEN.RESIZING_HITBOX(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPUND.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPMID.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPON.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPHIT.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPEN.RESIZE(MAP_TATE_MAX1, MAP_YOKO_MAX1);
 }
 
 VOID RESIZING_VILLAGE_MAP()
@@ -1693,33 +2182,6 @@ VOID RESIZING_FOREST_MAP()
 	MAPON.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPHIT.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
-}
-
-VOID LOADING_SAMPLE_MAP()
-{
-	TATE_MAX = MAP_TATE_MAX1, YOKO_MAX = MAP_YOKO_MAX1;
-	divmap.DIV_MAP(GAME_MAP_PATH1,MAP_DIV_TATE,MAP_DIV_YOKO,MAP_DIV_WIDTH);
-	MAPUND.LOADING_MAP(GAME_MAP1_UNDER_TXT);//下のマップ
-	MAPUND.MAPSETTING(divmap.width, divmap.height,MAP_SAMP_STx,MAP_SAMP_STy,
-		MAP_TATE_MAX1,MAP_YOKO_MAX1);
-	MAPMID.LOADING_MAP(GAME_MAP1_MIDDLE_TXT);//中のマップ
-	MAPMID.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPON.LOADING_MAP(GAME_MAP1_ON_TXT);//上のマップ
-	MAPON.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPHIT.LOADING_MAP(GAME_MAP1_HITBOX);//当たり判定のマップ
-	MAPHIT.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPHIT.SETTING_HITBOX(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1,MAP_YOKO_MAX1);
-	MAPHIT.HitObj = MAP_SAMPLE_HITOBJ;
-	MAPEN.LOADING_MAP(GAME_MAP1_ENEMYMAP);//敵の出現マップ
-	MAPEN.MAPSETTING(divmap.width, divmap.height, MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1, MAP_YOKO_MAX1);
-	MAPEN.SETTING_HITBOX(divmap.width, divmap.height,MAP_SAMP_STx, MAP_SAMP_STy,
-		MAP_TATE_MAX1,MAP_YOKO_MAX1);
-	return;
 }
 
 VOID LOADING_VILLAGE_MAP()
@@ -1775,7 +2237,33 @@ VOID LOADING_FOREST_MAP()
 	MAPEN.SETTING_HITBOX(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
 		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.HitObj = MAP_FOREST_ENEMY_HITOBJ;
+	MAPEN.HitObjBoss = MAP_FOREST_HITOBJ_BOSS;
 	return;
+}
+
+BOOL LOADING_FOREST_COORDINATES()
+{
+	if (MAPUND.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	if (MAPMID.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	if (MAPON.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	if (MAPHIT.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	if (MAPEN.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	MAPHIT.SETTING_HITBOX_COORDINATES(divmap.width, divmap.height,MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX,MAP_FOREST_MOVE_HITOBJ);
+	MAPEN.SETTING_HITBOX_COORDINATES(divmap.width, divmap.height,MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX,MAP_FOREST_MOVE_HITOBJ);
+	return TRUE;
+}
+
+BOOL LOADING_DATA_SLOT(int maptag)
+{
+	switch (maptag)
+	{
+	case 1:
+		RESIZING_FOREST_MAP();
+		LOADING_FOREST_MAP();
+		if (LOADING_FOREST_COORDINATES() == FALSE) { return FALSE; }
+		return TRUE;
+		break;
+	}
 }
 
 VOID CREATE_FULL_FONT()

@@ -61,7 +61,44 @@ BOOL MAP_HITBOX::SETTING_HITBOX(int chipwidth, int chipheight,int Stx,int Sty
 	return TRUE;
 }
 
+BOOL MAP_HITBOX::SETTING_HITBOX_COORDINATES(int chipwidth, int chipheight
+	, int TATE_MAX, int YOKO_MAX,int CHANGEMAP)//マップへの当たり判定の設定
+{
+	for (int tate = 0; tate < TATE_MAX; tate++)
+	{
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+		{
+			//マップの当たり判定を設定
+			if (kind[tate][yoko] == CHANGEMAP)
+			{
+				this->Hitmap[tate][yoko].left = x[tate][yoko];
+				this->Hitmap[tate][yoko].top = y[tate][yoko]+chipwidth-1;
+				this->Hitmap[tate][yoko].right = x[tate][yoko] + chipwidth;
+				this->Hitmap[tate][yoko].bottom = y[tate][yoko] +chipwidth;
+			}
+			else {
+				this->Hitmap[tate][yoko].left = x[tate][yoko];
+				this->Hitmap[tate][yoko].top = y[tate][yoko];
+				this->Hitmap[tate][yoko].right = x[tate][yoko] + chipwidth;
+				this->Hitmap[tate][yoko].bottom = y[tate][yoko] + chipheight;
+			}
+		}
+	}
+	return TRUE;
+}
+
 BOOL MAP_ENEMY::ENEMY_FLAG_RIZE()//敵に会うフラグを上昇させる
+{
+	flagPT += GetRand(10);
+	if (flagPT > flagMAX)
+	{
+		flagPT = 0;
+		return TRUE;
+	}
+	else { return FALSE; }
+}
+
+BOOL MAP_ENEMY::ENEMY_FLAG_BOSS()//敵に会うフラグを上昇させる
 {
 	flagPT += GetRand(10);
 	if (flagPT > flagMAX)
@@ -87,6 +124,10 @@ int MAP_ENEMY::MY_CHECK_ENEMY_PLAYER_COLL(RECT playercoll,int TATE_MAX,int YOKO_
 					{
 						return 1;
 					}
+				}
+				if (this->map[tate][yoko] == HitObjBoss)//草原の時
+				{
+						return 2;
 				}
 			}
 		}

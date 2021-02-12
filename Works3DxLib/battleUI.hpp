@@ -54,12 +54,20 @@ public:
 	int Iaiskillx = 480, Iaiskilly = 435, Iaiskillx2 = 940, Iaiskilly2 = 460;
 	//バトルスキルの要素を収容する変数
 	MUSIC skillSE;
-	
+
+	int ItemPosX = 480, ItemPosY = 400;
+	int ICarsolX = ItemPosX - 2, ICarsolY = ItemPosY - 2, ICarsolX2 = ItemPosX + 210+2, ICarsolY2 = ItemPosY + 22;
+	int ItemBrend = 200;
+	BOOL ItemBrendflg = TRUE;
+	int Itemtag = 0;
+
 	BOOL EncntUIisView = TRUE;
 	BOOL CHANGE_COUNT();
 	BOOL ENTER_COUNT_SKILL();
 	BOOL SKILL_MOVE();
 	VOID SKILL_MOVE_NEW();//スキル項目の描画位置を初期化する関数
+
+	VOID ChengingBrend_Item();
 };
 
 BOOL BATTLE_UI::CHANGE_COUNT()//UIの項目移動を待つ関数
@@ -99,4 +107,24 @@ VOID BATTLE_UI::SKILL_MOVE_NEW()
 	Kenx = 480, Keny = 500, Kenx2 = 710, Keny2 = 590;
 	Magicx = 720, Magicy = 500, Magicx2 = 950, Magicy2 = 590;
 	IaiCount = 0;
+}
+
+VOID BATTLE_UI::ChengingBrend_Item()
+{
+	if (ItemBrendflg == TRUE)
+	{
+		ItemBrend -= 5;
+	}
+	if (ItemBrendflg == FALSE)
+	{
+		ItemBrend += 5;
+	}
+	if (ItemBrend <= 0)
+	{
+		ItemBrendflg = FALSE;
+	}
+	if (ItemBrend >= 200)
+	{
+		ItemBrendflg = TRUE;
+	}
 }

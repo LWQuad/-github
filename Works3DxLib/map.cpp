@@ -34,8 +34,79 @@ BOOL MAPINPUT::LOADING_MAP(const char* maptxt)//ƒ}ƒbƒvƒf[ƒ^‚ğ“Ç‚İ‚ŞŠÖ”(ƒ}ƒbƒ
 	return TRUE;
 }
 
-VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight,int Stx,int Sty,int TATE_MAX,int YOKO_MAX)
+BOOL MAPINPUT::LOADING_MAP_TAG(int saveslot,const char* maptagpath)
+{
+	int ret;
+	FILE* fp = fopen(maptagpath, "r");
+	while (ret = fscanf(fp, "%d,",
+		&MAPtag[saveslot]) != EOF) {};
+	return TRUE;
+}
+
+BOOL MAPINPUT::LOADING_MAP_COORDINATES(const char* maptxtX,const char* maptxtY)
+//ƒ}ƒbƒvƒf[ƒ^‚ÌÀ•W‚ğ“Ç‚İ‚ŞŠÖ”(XÀ•W‚Ìƒtƒ@ƒCƒ‹ƒpƒXAYÀ•W‚Ìƒtƒ@ƒCƒ‹ƒpƒX)
+{
+	ifstream ifsX(maptxtX),ifsY(maptxtY);
+	string strX, strY;
+	int tate = 0, yoko = 0;
+	while (getline(ifsX, strX))
+	{
+		string tmp = "";
+		istringstream stream(strX);
+		while (getline(stream, tmp, ','))
+		{
+			this->x[tate][yoko] = atoi(tmp.c_str());
+			yoko++;
+		}
+		yoko = 0;
+		tate++;
+	}
+	tate = 0, yoko = 0;
+	while (getline(ifsY, strY))
+	{
+		string tmp = "";
+		istringstream stream(strY);
+		while (getline(stream, tmp, ','))
+		{
+			this->y[tate][yoko] = atoi(tmp.c_str());
+			yoko++;
+		}
+		yoko = 0;
+		tate++;
+	}
+	ifsX.close(),ifsY.close();
+	return TRUE;
+}
+
+//ƒ}ƒbƒv‚ÌÀ•W‚ğ•Û‘¶‚·‚éŠÖ”
+BOOL MAPINPUT::SAVE_MAP(int TATE_MAX, int YOKO_MAX,const char* mapdatapathX,const char* mapdatapathY,
+	const char* maptagpath)
+{
+	ofstream ofsX(mapdatapathX), ofsY(mapdatapathY), ofsTag(maptagpath);
+	if (!ofsX||!ofsY)
+	{
+		//ƒGƒ‰[ƒƒbƒZ[ƒW•\¦
+		MessageBox(GetMainWindowHandle(), ERROR_MESSAGE, "ƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½", MB_OK);
+		return FALSE;
+	}
+	for (int tate = 0; tate < TATE_MAX; tate++)
+	{
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+		{
+			ofsX << this->x[tate][yoko]<<",";
+			ofsY << this->y[tate][yoko]<<",";
+		}
+		ofsX << endl;
+		ofsY << endl;
+	}
+	if (TATE_MAX == MAP_FOREST_TATEMAX && YOKO_MAX == MAP_FOREST_YOKOMAX) {
+		ofsTag << 1 << endl;
+	}
+	return TRUE;
+}
+
 //ƒ}ƒbƒvƒf[ƒ^‚ÌÀ•W‚ğİ’è‚·‚éŠÖ”(ƒ}ƒbƒvƒ`ƒbƒv‚Ì•Aƒ}ƒbƒvƒ`ƒbƒv‚Ì‚‚³)
+VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight,int Stx,int Sty,int TATE_MAX,int YOKO_MAX)
 {
 	
 
@@ -64,6 +135,41 @@ VOID MAPINPUT::MAPSETTING(int chipwidth, int chipheight,int Stx,int Sty,int TATE
 	return;
 }
 
+VOID MAPINPUT::INTARACTIV_MAP(int TATE_MAX, int YOKO_MAX)
+{
+	mapmove++;
+	if (mapmove==10)
+	{
+		for (int tate = 0; tate < TATE_MAX; tate++)
+		{
+			for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+			{
+				//ƒ}ƒbƒv‚ğ•`‰æ
+				if (kind[tate][yoko] == 1460)
+				{
+					kind[tate][yoko] = 1461;
+				}
+			}
+		}
+	}
+	if (mapmove==20)
+	{
+		for (int tate = 0; tate < TATE_MAX; tate++)
+		{
+			for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+			{
+				//ƒ}ƒbƒv‚ğ•`‰æ
+				if (kind[tate][yoko] == 1461)
+				{
+					kind[tate][yoko] = 1460;
+				}
+			}
+		}
+		mapmove = 0;
+	}
+	return;
+}
+
 
 
 BOOL MAP_DIV::DIV_MAP(const char* path,int div_tate,int div_yoko,int div_scale) {
@@ -79,7 +185,7 @@ BOOL MAP_DIV::DIV_MAP(const char* path,int div_tate,int div_yoko,int div_scale) 
 	if (mapRes == -1)
 	{
 		//ƒGƒ‰[ƒƒbƒZ[ƒW•\¦
-		MessageBox(GetMainWindowHandle(), GAME_MAP_PATH1, "ƒ}ƒbƒv‰æ‘œ‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½", MB_OK);
+		MessageBox(GetMainWindowHandle(), ERROR_MESSAGE, "ƒ}ƒbƒv‰æ‘œ‚Ì“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½", MB_OK);
 		return FALSE;
 	}
 	//•‚Æ‚‚³‚ğæ“¾

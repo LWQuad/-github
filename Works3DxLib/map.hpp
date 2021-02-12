@@ -9,18 +9,15 @@
 #include <string>
 using namespace std;
 
-//サンプル用
-#define GAME_MAP_PATH1 TEXT(".\\IMAGEs\\MAPIMAGE\\mapchip1.png")
-#define GAME_MAP1_UNDER_TXT TEXT(".\\MAP\\map1_マップ下.csv")
-#define GAME_MAP1_MIDDLE_TXT TEXT(".\\MAP\\map1_マップ中.csv")
-#define GAME_MAP1_ON_TXT TEXT(".\\MAP\\map1_マップ上.csv")
-#define GAME_MAP1_HITBOX TEXT(".\\MAP\\map1_当たり判定のマップ.csv")
-#define GAME_MAP1_ENEMYMAP TEXT(".\\MAP\\map1_敵の出現マップ.csv")
+#define ERROR_MESSAGE TEXT("エラー発生")
 
-#define MAP_TATE_MAX1		40
-#define MAP_YOKO_MAX1		40
-#define MAP_SAMP_STx (32*MAP_YOKO_MAX1)-GAME_WIDTH
-#define MAP_SAMP_STy (32*MAP_TATE_MAX1)-GAME_HEIGHT
+#define MAP_TAG_1 TEXT(".\\SAVEDATA\\SAVESLOT01\\maptag.csv")
+#define MAP_SAVE_PLACE_X_1 TEXT(".\\SAVEDATA\\SAVESLOT01\\座標X.csv")
+#define MAP_SAVE_PLACE_Y_1 TEXT(".\\SAVEDATA\\SAVESLOT01\\座標Y.csv")
+
+#define MAP_TAG_2 TEXT(".\\SAVEDATA\\SAVESLOT02\\maptag.csv")
+#define MAP_TAG_3 TEXT(".\\SAVEDATA\\SAVESLOT03\\maptag.csv")
+
 
 //村用
 #define MAP_MURA_PATH TEXT(".\\MAP\\VILLAGE\\村用タイル.png")
@@ -44,6 +41,10 @@ using namespace std;
 #define MAP_FOREST_ON TEXT(".\\MAP\\FOREST\\forest_上.csv")
 #define MAP_FOREST_ENEMYMAP TEXT(".\\MAP\\FOREST\\forest_敵の出現マップ.csv")
 #define MAP_FOREST_HITBOX TEXT(".\\MAP\\FOREST\\forest_当たり判定のマップ.csv")
+
+#define MAP_FOREST_SAVE_PLACE_X TEXT(".\\MAP\\FOREST\\forest_座標X.csv")
+#define MAP_FOREST_SAVE_PLACE_Y TEXT(".\\MAP\\FOREST\\forest_座標Y.csv")
+
 
 #define MAP_FOREST_TATEMAX	100
 #define MAP_FOREST_YOKOMAX	53
@@ -74,13 +75,18 @@ public:
 class MAPINPUT //マップを読み込むクラス
 {
 public:
+	int MAPtag[3] = { 0 };
 	BOOL LOADING_MAP(const char*);//マップを読み込む（マップのパス）
+	BOOL SAVE_MAP(int,int,const char*,const char*,const char*);
+	BOOL LOADING_MAP_COORDINATES(const char*,const char*);
+	BOOL LOADING_MAP_TAG(int,const char*);
 	BOOL isVIEW;//表示できるかを示す
 	VOID RESIZE(int, int);
     void MAPSETTING(int,int,int,int,int,int);//マップの座標を初期セットする（マップチップの幅、高さ,初期位置x,y）
-	vector<vector<int>> kind, width, height, x,
-		y , mapF, map;
+	vector<vector<int>> kind, width, height, x,y , mapF, map;
 	/*-					種類,幅　　高さ　x,y座標　マップの初期化用-*/
+	VOID INTARACTIV_MAP(int,int);
+	int mapmove=0;
 };
 
 

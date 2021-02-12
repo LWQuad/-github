@@ -4,35 +4,13 @@
 class START_UI
 {
 private:
-	int E_countM = 30, C_countM = 30;
 public:
-	int tag = 0;
-	int E_count = 0, C_count = 0;
-	int NewgameS, LoadgameS;
-	BOOL CHECK_CHENGE_COUNT_ENTER();//エンターを押す関数
-	BOOL CHECK_CHENGE_COUNT_CATEGORY();//ステータスのカテゴリ変更のタブを管理する
-
+	int DataTag = 0, tag = 0;
+	int Startflg = 0, Movelogoflg = 0;
+	int SaveData1x = 320, SaveData1y = 224;
+	int SaveData1x2=640, SaveData1y2=320;
+	int SaveData2y = SaveData1y2 + 32, SaveData2y2 = SaveData2y + 96;
+	int SaveData3y = SaveData2y2 + 32, SaveData3y2 = SaveData3y + 96;
+	int Carsolx, Carsoly, Carsolx2, Carsoly2;
 };
-
-BOOL START_UI::CHECK_CHENGE_COUNT_ENTER()
-{
-	if (E_count >= E_countM)
-	{
-		return TRUE;
-	}
-	else {
-		return FALSE;
-	}
-}
-
-BOOL START_UI::CHECK_CHENGE_COUNT_CATEGORY()
-{
-	if (C_count >= C_countM)
-	{
-		return TRUE;
-	}
-	else {
-		return FALSE;
-	}
-}
 

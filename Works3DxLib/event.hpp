@@ -1,7 +1,12 @@
 #pragma once
 #include "image.hpp"
+#include <iostream>
 #include <vector>
-#include <string>
+#include <fstream>
+#include <sstream>
+#include <stdlib.h>
+#include "windowsystem.h"
+#include "DxLib.h"
 #define EVENT_TXT_SAMPLE TEXT(".\\EVENTtxt\\ƒTƒ“ƒvƒ‹.txt")
 #define EVENT_TXT TEXT(".\\EVENTtxt\\EVENT1.txt")
 
@@ -19,4 +24,6 @@ public:
 	LOAD_SINGLE_IMAGE txtUI;
 	BOOL INPUTTXT(const char*);
 };
+
+
 
