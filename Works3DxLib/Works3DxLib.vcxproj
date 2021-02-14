@@ -177,6 +177,7 @@
     <ClInclude Include="playerstatus.hpp" />
     <ClInclude Include="startUI.hpp" />
     <ClInclude Include="StatesUI.hpp" />
+    <ClInclude Include="WaitTimer.hpp" />
     <ClInclude Include="windowsystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

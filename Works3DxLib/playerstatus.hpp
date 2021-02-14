@@ -151,7 +151,7 @@ public:
 	BOOL INPUT_PLAYER_PLACE(int&,int&,const char*);
 
 	BOOL SAVE_STATES(const char*);//ステータスのセーブ
-	BOOL SAVE_PLAYTIME(const char*);//プレイ時間のセーブ
+	BOOL SAVE_PLAYTIME(const char*,int);//プレイ時間のセーブ
 	BOOL SAVE_PLAYER_PLACE(int,int,const char*);//プレイヤーの場所を保存
 
 	void CHANGE_SWORD(int, int);//武器の切り替え
@@ -167,7 +167,7 @@ public:
 	VOID CRI_MESSAGE(int&, int,int&);//クリティカルの表示処理(変更する変数,変更するシーン)
 	VOID PLAYTIME_CALC_F();
 	//プレイ時間の最初の値を登録する関数
-	VOID PLAYTIME_CALC_E();
+	VOID PLAYTIME_CALC_E(int);
 	VOID PLAYTIME_STATE();
 	int bhour[3], bminutes[3], bsecond[3];
 	//プレイ時間の最後の値を登録し、総プレイ時間を計算する関数
@@ -179,7 +179,52 @@ public:
 		bufLMDF[3], bufLAGI[3], bufLLv[3], bufLEXP[3], bufLEXPMAX[3];
 	int bufFullTime[3];
 	char bufLName[3][30];
+
+	int USE_ITEM(int, int,int,int,int&,int&,int&);
+	VOID BUF_CALC(int,int&);
 };
+
+int PlayerStates::USE_ITEM(int HPheal, int MPheal,int goodhosei,int badhosei,
+	int& bufSTR, int& bufDEF,int&Itemhave)
+{
+	if ((HP == HPMAX && MP == MPMAX)||Itemhave<=0)
+	{
+		return -1;
+	}
+	else {
+		HP += HPheal;//HPを回復する
+		if (HP > HPMAX)
+		{
+			HP = HPMAX;
+		}
+		MP += MPheal;//MPを回復する
+		if (MP > MPMAX)
+		{
+			MP = MPMAX;
+		}
+		BUF_CALC(goodhosei,bufSTR);
+		Itemhave--;
+		return 0;
+	}
+}
+
+VOID PlayerStates::BUF_CALC(int bufhosei,int& bufSTATUS)
+{
+	if (bufhosei <= 0)//バフ効果がない時戻る
+	{
+		return;
+	}
+	float bufStatus = bufSTATUS * bufhosei;
+	if (bufStatus < 1)//バフ効果が1より小さい時1を足す
+	{
+		bufSTATUS += 1;
+	}
+	else
+	{
+		bufSTATUS += int(bufStatus);
+	}
+	return;
+}
 
 VOID PlayerStates::PLAYTIME_STATE()
 {
@@ -230,15 +275,15 @@ VOID PlayerStates::PLAYTIME_CALC_F() {
 	return;
 }
 
-VOID PlayerStates::PLAYTIME_CALC_E() {
-	FullPlayTime= FullPlayTime+GetNowCount() - PlayTimeF;
+VOID PlayerStates::PLAYTIME_CALC_E(int saveslot) {
+	FullPlayTime= bufFullTime[saveslot]+GetNowCount() - PlayTimeF;
 	CountPlayTimeflg = TRUE;
 	return;
 }
 
-BOOL PlayerStates::SAVE_PLAYTIME(const char* timepath)//プレイ時間を記録する
+BOOL PlayerStates::SAVE_PLAYTIME(const char* timepath, int saveslot)//プレイ時間を記録する
 {
-	PLAYTIME_CALC_E();
+	PLAYTIME_CALC_E(saveslot);
 	FILE* fp = fopen(timepath, "w");
 	fprintf(fp, "%d",FullPlayTime);
 	fclose(fp);

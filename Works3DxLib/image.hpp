@@ -15,16 +15,19 @@ using namespace std;
 
 #define IMAGE_PLAYER_INMAP TEXT(".\\IMAGEs\\charachip.png")
 
-#define IMAGE_TITLE TEXT(".\\IMAGEs\\Kitune.jpg")
+#define IMAGE_TITLE TEXT(".\\IMAGEs\\titleimage.png")
 #define IMAGE_PLAYER_BATTLE TEXT(".\\IMAGEs\\playerimage.png")
 //エネミー
 #define IMAGE_ENEMY_OKAUMIUSHI TEXT(".\\IMAGEs\\ENEMY\\オカウミウシ.png")
 #define IMAGE_ENEMY_GOLDUMIUSHI TEXT(".\\IMAGEs\\ENEMY\\ゴールドウミウシ.png")
 #define IMAGE_ENEMY_SURIMEUNKOU TEXT(".\\IMAGEs\\ENEMY\\スライムアンコウ.png")
 #define IMAGE_ENEMY_GREYLOTUS TEXT(".\\IMAGEs\\ENEMY\\グレーロータス.png")
+#define IMAGE_ENEMY_YAKINKOROGI TEXT(".\\IMAGEs\\ENEMY\\ヤキンコオロギ.png")
+#define IMAGE_ENEMY_KYORYOBATTA TEXT(".\\IMAGEs\\ENEMY\\キョウリョウバッタ.png")
 
 
 #define IMAGE_BATTLE_BACK	TEXT(".\\IMAGEs\\battle_back.png")
+#define IMAGE_BATTLE_BACK_NIGHT	TEXT(".\\IMAGEs\\battle_back_night.png")
 #define IMAGE_BATTLE_BACK_NUMA	TEXT(".\\IMAGEs\\バトルステージ_沼.png")
 #define IMAGE_UI_BACK TEXT(".\\IMAGEs\\BattleUI\\UI背景.png")
 #define IMAGE_UI_KOUGEKI TEXT(".\\IMAGEs\\BattleUI\\攻撃.png")
@@ -44,6 +47,8 @@ using namespace std;
 #define IMAGE_STATES_BACK2 TEXT(".\\IMAGEs\\STATES\\ステータス画面背景2.png")
 //イベント画面
 #define IMAGE_EVENT_TXTUIBACK TEXT(".\\IMAGEs\\EVENT\\frame_message.png")
+//ゲームオーバー画面
+#define IMAGE_GAME_OVER	TEXT(".\\IMAGEs\\ゲームオーバー画面.png")
 //バトルエフェクト
 #define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\btleffectNormal.png")
 #define IMAGE_BE_SKILL_IAI_MUTUKI TEXT(".\\IMAGEs\\640×480\\btleffectIAI_mutuki.png")

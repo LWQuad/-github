@@ -26,6 +26,7 @@ using namespace std;
 #define MAP_MURA_ON TEXT(".\\MAP\\VILLAGE\\mura_上.csv")
 #define MAP_MURA_ENEMYMAP TEXT(".\\MAP\\VILLAGE\\mura_敵の出現マップ.csv")
 #define MAP_MURA_HITBOX TEXT(".\\MAP\\VILLAGE\\mura_当たり判定のマップ.csv")
+#define MAP_MURA_LIGHT_HITBOX TEXT(".\\MAP\\VILLAGE\\mura_灯りのマップ.csv")
 
 #define MAP_MURA_TATEMAX	34
 #define MAP_MURA_YOKOMAX	103
@@ -41,6 +42,7 @@ using namespace std;
 #define MAP_FOREST_ON TEXT(".\\MAP\\FOREST\\forest_上.csv")
 #define MAP_FOREST_ENEMYMAP TEXT(".\\MAP\\FOREST\\forest_敵の出現マップ.csv")
 #define MAP_FOREST_HITBOX TEXT(".\\MAP\\FOREST\\forest_当たり判定のマップ.csv")
+#define MAP_FOREST_LIGHT_HITBOX TEXT(".\\MAP\\FOREST\\forest_灯りのマップ.csv")
 
 #define MAP_FOREST_SAVE_PLACE_X TEXT(".\\MAP\\FOREST\\forest_座標X.csv")
 #define MAP_FOREST_SAVE_PLACE_Y TEXT(".\\MAP\\FOREST\\forest_座標Y.csv")

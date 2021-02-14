@@ -15,6 +15,7 @@
 #include "StatesUI.hpp"
 #include "startUI.hpp"
 #include "event.hpp"
+#include "WaitTimer.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -81,7 +82,7 @@ BOOL LOADING_DATA_SLOT(int); //セーブスロットからデータをロードする
 
 PlayerStates Pstates;
 EnemyStates Estates;
-LOAD_SINGLE_IMAGE title;
+LOAD_SINGLE_IMAGE title, over;
 LOAD_SINGLE_IMAGE titlelogo;
 LOAD_SINGLE_IMAGE Bplayer;
 LOAD_SINGLE_IMAGE enemy;
@@ -89,10 +90,10 @@ LOAD_SINGLE_IMAGE btbk;
 LOAD_SINGLE_IMAGE UIback;
 BATTLE_EFFECT BEnorAT;
 BATTLE_EFFECT BEIAI, BEKIKON, BEMAGIC, BEKEN;
-CREATE_FONTHANDLE tanu20,tanu20n,tanu30,tanu30n;
+CREATE_FONTHANDLE tanu20, tanu20n, tanu30, tanu30n, tanu80;
 MAP_DIV divmap;//マップチップ分割用クラス
 MAPINPUT MAPUND,MAPMID,MAPON;//マップ
-MAP_HITBOX MAPHIT;//当たり判定のマップ
+MAP_HITBOX MAPHIT,MAPLIGHT;//当たり判定のマップ
 MAP_ENEMY MAPEN;//敵の出現マップ
 //ENEMY Senemy;
 CHARA player;
@@ -102,7 +103,7 @@ START_UI F_UI;
 DEFAULT_COLOR C;
 EVENT eventS;
 ITEM item;
-MUSIC PlayBGM;
+MUSIC PlayBGM, Encount;
 MUSIC BTBGM1;
 MUSIC BTSEnor;
 MUSIC BTSEENnor;
@@ -111,6 +112,8 @@ MUSIC OverBGM;
 MUSIC TitleBGM;
 CHANGE_TIME ChangeT;
 KEYINPUT KEY;
+WaitingTime WaiTime;
+SINGLE_TASK Item_Task;
 
 int GameScene;//ゲームシーンを管理する
 int Message;//メッセージを管理
@@ -447,7 +450,6 @@ VOID MY_START_DRAW()
 		}
 		break;
 	}
-	DrawFormatStringToHandle(0, 0, C.White, tanu30n.handle, "*画像は開発中のものです（本編では差し替えます）");
 	return;
 }
 
@@ -575,7 +577,7 @@ VOID MY_STATES_PROC()
 					if (S_UI.Savetag == 0)
 					{
 						Pstates.SAVE_STATES(PLAYER_SAVE1_PSTATUS);
-						Pstates.SAVE_PLAYTIME(PLAYER_SAVE1_PLAYTIME);
+						Pstates.SAVE_PLAYTIME(PLAYER_SAVE1_PLAYTIME,0);
 						Pstates.SAVE_PLAYER_PLACE(player.image.x, player.image.y, PLAYER_SAVE1_PLACE);
 						MAPUND.SAVE_MAP(TATE_MAX, YOKO_MAX, MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1, MAP_TAG_1);
 						S_UI.SavingStch = 1;
@@ -774,7 +776,7 @@ VOID MY_STATES_DRAW()
 			for (int i = 0; i < 5; i++)
 			{
 				DrawFormatStringToHandle(S_UI.ItemPosX + 600, S_UI.ItemPosY + 160, Color, tanu20n.handle, "%s",
-					item.Expl2[S_UI.Itemtag][i]);
+					item.Expl[S_UI.Itemtag][i]);
 				S_UI.ItemPosY += 25;
 			}
 			S_UI.ItemPosY -= 25*5;
@@ -901,21 +903,24 @@ VOID MY_PLAY_PROC()
 			{
 				StopSoundMem(PlayBGM.handle);	//BGMを止める
 			}
-			Estates.ENEMY_KIND_FLAG();
+			Estates.ENEMY_KIND_FLAG(ChangeT.NowHours);
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
-			GameScene = GAME_BATTLE_SCENE;}
+			GameScene = GAME_BATTLE_SCENE;
+			}
 		if (ENEMY_COLL == 2)
 		{
 			if (CheckSoundMem(PlayBGM.handle) != 0)
 			{
 				StopSoundMem(PlayBGM.handle);	//BGMを止める
 			}
+			PlaySoundMem(Encount.handle, DX_PLAYTYPE_BACK);
 			if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC_BOSS) == FALSE);
 			if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK_NUMA) == FALSE);
 			Estates.ENEMY_BOSS_FLAG();
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
+			while (CheckSoundMem(Encount.handle) == 1) {}
 			GameScene = GAME_BATTLE_SCENE;
 		}
 		if (MAPON.y[0][0] < 0 && player.image.y < 100)
@@ -935,6 +940,9 @@ VOID MY_PLAY_PROC()
 					MAPEN.y[tate][yoko] += 5;
 					MAPEN.Hitmap[tate][yoko].bottom += 5;
 					MAPEN.Hitmap[tate][yoko].top += 5;
+					MAPLIGHT.y[tate][yoko] += 5;
+					MAPLIGHT.Hitmap[tate][yoko].bottom += 5;
+					MAPLIGHT.Hitmap[tate][yoko].top += 5;
 				}
 			}
 		}
@@ -956,7 +964,7 @@ VOID MY_PLAY_PROC()
 			{
 				StopSoundMem(PlayBGM.handle);	//BGMを止める
 			}
-			Estates.ENEMY_KIND_FLAG();
+			Estates.ENEMY_KIND_FLAG(ChangeT.NowHours);
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;
@@ -978,6 +986,9 @@ VOID MY_PLAY_PROC()
 					MAPEN.x[tate][yoko] += 5;
 					MAPEN.Hitmap[tate][yoko].left += 5;
 					MAPEN.Hitmap[tate][yoko].right += 5;
+					MAPLIGHT.x[tate][yoko] += 5;
+					MAPLIGHT.Hitmap[tate][yoko].left += 5;
+					MAPLIGHT.Hitmap[tate][yoko].right += 5;
 				}
 			}
 		}
@@ -997,7 +1008,7 @@ VOID MY_PLAY_PROC()
 			{
 				StopSoundMem(PlayBGM.handle);	//BGMを止める
 			}
-			Estates.ENEMY_KIND_FLAG();
+			Estates.ENEMY_KIND_FLAG(ChangeT.NowHours);
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;
@@ -1019,6 +1030,9 @@ VOID MY_PLAY_PROC()
 					MAPEN.y[tate][yoko] -= 5;
 					MAPEN.Hitmap[tate][yoko].bottom -= 5;
 					MAPEN.Hitmap[tate][yoko].top -= 5;
+					MAPLIGHT.y[tate][yoko] -= 5;
+					MAPLIGHT.Hitmap[tate][yoko].bottom -= 5;
+					MAPLIGHT.Hitmap[tate][yoko].top -= 5;
 				}
 			}
 		}
@@ -1037,7 +1051,7 @@ VOID MY_PLAY_PROC()
 			{
 				StopSoundMem(PlayBGM.handle);	//BGMを止める
 			}
-			Estates.ENEMY_KIND_FLAG();
+			Estates.ENEMY_KIND_FLAG(ChangeT.NowHours);
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
 			GameScene = GAME_BATTLE_SCENE;}
@@ -1058,6 +1072,9 @@ VOID MY_PLAY_PROC()
 					MAPEN.x[tate][yoko] -= 5;
 					MAPEN.Hitmap[tate][yoko].left -= 5;
 					MAPEN.Hitmap[tate][yoko].right -= 5;
+					MAPLIGHT.x[tate][yoko] -= 5;
+					MAPLIGHT.Hitmap[tate][yoko].left -= 5;
+					MAPLIGHT.Hitmap[tate][yoko].right -= 5;
 				}
 			}
 		}
@@ -1108,42 +1125,30 @@ VOID MY_PLAY_DRAW()
 				divmap.handle[MAPON.kind[tate][yoko]],
 				TRUE);
 		}
-		//for (int yoko = 0; yoko < YOKO_MAX; yoko++)
-		//{
-		//	DrawGraph(
-		//		MAPHIT.x[tate][yoko],
-		//		MAPHIT.y[tate][yoko],
-		//		divmap.handle[MAPHIT.kind[tate][yoko]],
-		//		TRUE);
-		//}
-		//for (int yoko = 0; yoko < YOKO_MAX; yoko++)
-		//{
-		//	DrawGraph(
-		//		MAPEN.x[tate][yoko],
-		//		MAPEN.y[tate][yoko],
-		//		divmap.handle[MAPEN.kind[tate][yoko]],
-		//		TRUE);
-		//}
 	}
-	//for (int tate = 0; tate < TATE_MAX; tate++)
-	//{
-	//	for (int yoko = 0; yoko < YOKO_MAX; yoko++)
-	//	{
-	//		//壁ならば
-	//		if (MAPHIT.kind[tate][yoko] == 63)
-	//		{
-	//		DrawBox(MAPHIT.Hitmap[tate][yoko].left, MAPHIT.Hitmap[tate][yoko].top,
-	//			MAPHIT.Hitmap[tate][yoko].right, MAPHIT.Hitmap[tate][yoko].bottom, GetColor(0, 0, 255), FALSE);
-	//		}
-
-	//	}
-	//}
-	//DrawBox(player.coll.left, player.coll.top, player.coll.right, player.coll.bottom, GetColor(255, 0, 0), FALSE);
 	ChangeT.ChangingLight();
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, int(ChangeT.Alpha));
 	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT,
 		GetColor(int(ChangeT.R), int(ChangeT.G), ChangeT.B), TRUE);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, int(ChangeT.DarkAlpha));
+	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT,
+		GetColor(int(ChangeT.nR), int(ChangeT.nG), ChangeT.nB), TRUE);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+
+
+	//灯りの描画
+	for (int tate = 0; tate < TATE_MAX; tate++)
+	{
+		for (int yoko = 0; yoko < YOKO_MAX; yoko++)
+		{
+				DrawGraph(
+					MAPLIGHT.x[tate][yoko],
+					MAPLIGHT.y[tate][yoko],
+					divmap.handle[MAPLIGHT.kind[tate][yoko]],
+					TRUE);
+		}
+	}
 	return;
 }
 
@@ -1616,47 +1621,154 @@ VOID MY_BATTLE_PROC()
 				}
 				break;
 				case 3://アイテム
-					if(KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT)==0)
+					switch (UI.UseItemflg)
 					{
-						if (UI.Itemtag % 2 == 0)
+					case 0:
+						Message = ITEM_VIEW_NAME;
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT) == 0)
 						{
-							UI.Itemtag += 1;
-							UI.ICarsolX += 260, UI.ICarsolX2 += 260;
+							if (UI.Itemtag % 2 == 0)
+							{
+								UI.Itemtag += 1;
+								UI.ICarsolX += 260, UI.ICarsolX2 += 260;
+							}
 						}
-					}
-					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0)
-					{
-						if (UI.Itemtag % 2 != 0)
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0)
 						{
-							UI.Itemtag -= 1;
-							UI.ICarsolX -= 260, UI.ICarsolX2 -= 260;
+							if (UI.Itemtag % 2 != 0)
+							{
+								UI.Itemtag -= 1;
+								UI.ICarsolX -= 260, UI.ICarsolX2 -= 260;
+							}
 						}
-					}
-					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
-					{
-						if (UI.Itemtag == 0 || UI.Itemtag == 1)
-						{}
-						else{
-							UI.Itemtag -= 2;
-							UI.ICarsolY -= 30, UI.ICarsolY2 -= 30;
-						}
-					}
-					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
-					{
-						if (UI.Itemtag == ITEMNUM - 2 || UI.Itemtag == ITEMNUM - 1)
-						{}
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
 						{
-							UI.Itemtag += 2;
-							UI.ICarsolY += 30, UI.ICarsolY2 += 30;
+							if (UI.Itemtag == 0 || UI.Itemtag == 1)
+							{
+							}
+							else {
+								UI.Itemtag -= 2;
+								UI.ICarsolY -= 30, UI.ICarsolY2 -= 30;
+							}
 						}
-					}
-					if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
-					{
-						UI.UItag = 0;
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0)
+						{
+							if (UI.Itemtag == ITEMNUM - 2 || UI.Itemtag == ITEMNUM - 1)
+							{}
+							{
+								UI.Itemtag += 2;
+								UI.ICarsolY += 30, UI.ICarsolY2 += 30;
+							}
+						}
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)
+						{
+							Message = ITEM_WITCH_USE;
+							UI.UseItemflg = 1;
+						}
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
+						{
+							UI.Itemtag = 0;
+							UI.ICarsolX = 478, UI.ICarsolX2 = 480 + 210 + 2;
+							UI.ICarsolY = 398, UI.ICarsolY2 = 400 + 22;
+							Playerflag = 0;
+						}
+						break;
+					case 1:
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RIGHT) == 0 ||
+							KEY.KEYINPUT_ALLACTION(KEY_INPUT_DOWN) == 0 ||
+							KEY.KEYINPUT_ALLACTION(KEY_INPUT_LEFT) == 0 ||
+							KEY.KEYINPUT_ALLACTION(KEY_INPUT_UP) == 0)
+						{
+							Message = ITEM_WITCH_USE;
+							PLAY_CARSOL_SOUND();
+							if (UI.UseItemtagPorE == 0)
+							{
+								UI.CharaCarsolX = Estates.image.x, UI.CharaCarsolY = 50;
+								UI.CharaCarsolX2 = Estates.image.x + Estates.image.width;
+								UI.CharaCarsolY2 = 50+Estates.image.height;
+								UI.UseItemtagPorE = 1;
+							}
+							else
+							{
+								UI.CharaCarsolX = Bplayer.x, UI.CharaCarsolY = Bplayer.y;
+								UI.CharaCarsolX2 = Bplayer.x + Bplayer.width;
+								UI.CharaCarsolY2 = Bplayer.y + Bplayer.height;
+								UI.UseItemtagPorE = 0;
+							}
+						}
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_RETURN) == 0)
+						{
+							PLAY_ENTER_SOUND(DX_PLAYTYPE_BACK);
+							if (UI.UseItemtagPorE == 0)
+							{
+								if (Item_Task.Single_Task() == TRUE)
+								{
+								    UI.UseorNot = Pstates.USE_ITEM(item.healHP[UI.Itemtag], item.healMP[UI.Itemtag], item.goodhosei[UI.Itemtag],
+									item.badhosei[UI.Itemtag], Pstates.bufAT, Pstates.bufDF, item.have[UI.Itemtag]);
+								}
+								if (UI.UseorNot == -1)//アイテムが使えない時
+								{
+									Message = ITEM_NOT_USE;
+									if (WaiTime.WaitTime_OneThrough(1) == TRUE)
+									{
+										WaiTime.WaitTime_New();
+										Item_Task.Remove_Task();
+									}
+								}
+								if (UI.UseorNot == 0)//アイテムが使えたとき
+								{
+									Message = ITEM_USE_MES;
+									if (WaiTime.WaitTime_OneThrough(2) == TRUE)
+									{
+										WaiTime.WaitTime_New();
+										Item_Task.Remove_Task();
+										UI.UseItemflg = 2;
+									}
+								}
+							}
+							else
+							{
+								if (Item_Task.Single_Task() == TRUE)
+								{
+									UI.UseorNot = Estates.USE_ITEM(item.healHP[UI.Itemtag], item.healMP[UI.Itemtag], item.goodhosei[UI.Itemtag],
+									item.badhosei[UI.Itemtag], Estates.AT, Estates.DF, item.have[UI.Itemtag]);
+								}
+								if (UI.UseorNot == -1)//アイテムが使えない時
+								{
+									Message = ITEM_NOT_USE;
+									if (WaiTime.WaitTime_OneThrough(1) == TRUE)
+									{
+										WaiTime.WaitTime_New();
+										Item_Task.Remove_Task();
+									}
+								}
+								if (UI.UseorNot == 0)//アイテムが使えたとき
+								{
+									Message = ITEM_USE_MES;
+									if (WaiTime.WaitTime_OneThrough(2) == TRUE)
+									{
+										WaiTime.WaitTime_New();
+										Item_Task.Remove_Task();
+										UI.UseItemflg = 2;
+									}
+								}
+							}
+						}
+						if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_BACK) == 0)
+						{
+							UI.Itemtag = 0;
+							UI.UseItemflg = 0;
+							UI.UseItemtagPorE = 0;
+						}
+						break;
+					case 2:
 						UI.Itemtag = 0;
-						UI.ICarsolX = 478, UI.ICarsolX2 = 480 + 210 + 2;
-						UI.ICarsolY = 398, UI.ICarsolY2 = 400+22;
-						Playerflag = 0;
+						UI.UseorNot = 0;
+						UI.UseItemflg = 0;
+						UI.UseItemtagPorE = 0;
+						UI.UItag = 0;
+						Battleflag = 1;
+						break;
 					}
 					break;
 				case 4://逃げる
@@ -1763,23 +1875,37 @@ VOID MY_BATTLE_PROC()
 			switch (Enemyflag)
 			{
 			case 0://通常攻撃
-				BEnorAT.Count++;
-				if (CheckSoundMem(BTSEENnor.handle) == 0 && BEnorAT.Count > 60)
+				switch (UI.EnemyNATflg)
 				{
-					//BGMの音量を下げる
-					ChangeVolumeSoundMem(255 * 50 / 100, BTSEENnor.handle);	//50%の音量にする
-					PlaySoundMem(BTSEENnor.handle, DX_PLAYTYPE_BACK);
-					if (Pstates.DAMAGE_CALC(Pstates.bufDF, Pstates.HP) == 1)
+				case 0:
+					Message = ENEMY_ATTACK_NORMAL;
+					if (WaiTime.WaitTime_OneThrough(1) == TRUE)
 					{
-						if (CheckSoundMem(BTBGM1.handle) != 0)
+						WaiTime.WaitTime_New();
+						UI.EnemyNATflg = 1;
+					}
+					break;
+				case 1:
+					BEnorAT.Count++;
+					if (CheckSoundMem(BTSEENnor.handle) == 0 && BEnorAT.Count > 60)
+					{
+						//BGMの音量を下げる
+						ChangeVolumeSoundMem(255 * 50 / 100, BTSEENnor.handle);	//50%の音量にする
+						PlaySoundMem(BTSEENnor.handle, DX_PLAYTYPE_BACK);
+						if (Pstates.DAMAGE_CALC(Pstates.bufDF, Pstates.HP) == 1)
 						{
-							StopSoundMem(BTBGM1.handle);	//BGMを止める
-						}
-						GameScene = GAME_END_SCENE;
-					};
-					BEnorAT.Count = 0;
-					Battleflag = 0;
-					Playerflag = 0;
+							if (CheckSoundMem(BTBGM1.handle) != 0)
+							{
+								StopSoundMem(BTBGM1.handle);	//BGMを止める
+							}
+							GameScene = GAME_END_SCENE;
+						};
+						BEnorAT.Count = 0;
+						UI.EnemyNATflg = 0;
+						Battleflag = 0;
+						Playerflag = 0;
+					}
+					break;
 				}
 				break;
 			case 1:
@@ -1815,12 +1941,12 @@ VOID MY_BATTLE_DRAW()
 {
 		int Ename=GetDrawFormatStringWidth("Lv:%d %s", Estates.Lv, Estates.Name);
 		SetDrawBright(UI.BrightR,UI.BrightG,UI.BrightB);//バトル画面の輝度
-		DrawGraph(btbk.x, btbk.y, btbk.handle, TRUE);//バトル画面の背景
+		DrawGraph(Estates.battleback.x, Estates.battleback.y, Estates.battleback.handle, TRUE);//バトル画面の背景
 		
 		DrawGraph(Estates.image.x, 50, Estates.image.handle, TRUE);//エネミーの画像
 		DrawFormatStringToHandle(Estates.image.x+Estates.image.width/2-Ename/2, 50, GetColor(255, 255, 255), tanu20.handle,
 			"Lv:%d %s", Estates.Lv,Estates.Name);//エネミーの名前
-		DrawGraph(250, 350, Bplayer.handle, TRUE);
+		DrawGraph(Bplayer.x,Bplayer.y, Bplayer.handle, TRUE);//プレイヤーの画像
 		DrawFormatStringToHandle(250, 370
 			, GetColor(255, 255, 255), tanu20.handle, "%s", Pstates.Name);
 		//UI
@@ -1986,16 +2112,16 @@ VOID MY_BATTLE_DRAW()
 					{
 						if (i % 2 == 0)//偶数の時
 						{
-							DrawBox(UI.ItemPosX - 2, UI.ItemPosY - 2, 
-								UI.ItemPosX +210+ 2, UI.ItemPosY + 22, C.Red, TRUE);
+							DrawBox(UI.ItemPosX - 2, UI.ItemPosY - 2,
+								UI.ItemPosX + 210 + 2, UI.ItemPosY + 22, C.Red, TRUE);
 							DrawFormatStringToHandle(UI.ItemPosX, UI.ItemPosY, C.White, tanu20n.handle, "%s",
 								item.Name[i]);
 							DrawFormatStringToHandle(UI.ItemPosX + 150, UI.ItemPosY, C.White, tanu20n.handle, "x %3d",
 								item.have[i]);
 						}
 						else {
-							DrawBox(UI.ItemPosX+260 - 2, UI.ItemPosY - 2,
-								UI.ItemPosX +260+ 210 + 2, UI.ItemPosY + 22, C.Red, TRUE);
+							DrawBox(UI.ItemPosX + 260 - 2, UI.ItemPosY - 2,
+								UI.ItemPosX + 260 + 210 + 2, UI.ItemPosY + 22, C.Red, TRUE);
 							DrawFormatStringToHandle(UI.ItemPosX + 260, UI.ItemPosY, C.White, tanu20n.handle, "%s",
 								item.Name[i]);
 							DrawFormatStringToHandle(UI.ItemPosX + 150 + 260, UI.ItemPosY, C.White, tanu20n.handle, "x %3d",
@@ -2009,6 +2135,15 @@ VOID MY_BATTLE_DRAW()
 						UI.ICarsolX2, UI.ICarsolY2, C.White, FALSE);
 					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 					UI.ItemPosY = 400;
+					switch (UI.UseItemflg)
+					{
+					case 0:
+						break;
+					case 1:
+						DrawBox(UI.CharaCarsolX, UI.CharaCarsolY,
+							UI.CharaCarsolX2, UI.CharaCarsolY2, C.Red, FALSE);
+						break;
+					}
 					break;
 				}
 				break;
@@ -2065,11 +2200,21 @@ VOID MY_END_PROC()
 		ChangeVolumeSoundMem(255 * 50 / 100, OverBGM.handle);	//50%の音量にする
 		PlaySoundMem(OverBGM.handle, DX_PLAYTYPE_LOOP);
 	}
+	if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_ESCAPE) == 0)
+	{
+		if (CheckSoundMem(OverBGM.handle) != 0)
+		{
+			StopSoundMem(OverBGM.handle);
+		}
+		GameScene = GAME_START_SCENE;
+	}
 	return;
 }
 VOID MY_END_DRAW()
 {
-	DrawStringToHandle(0, 0, "あなたは負けました", GetColor(255, 255, 255), tanu20.handle);
+	DrawGraph(0, 0, over.handle, TRUE);
+	int Font = GetDrawStringWidthToHandle("GAME OVER", 9, tanu80.handle);
+	DrawStringToHandle(GAME_WIDTH/2-Font/2, GAME_HEIGHT/2-40, "GAME OVER", C.Red, tanu80.handle);
 	return;
 }
 
@@ -2106,6 +2251,10 @@ VOID BATTLE_PROC_NEW(VOID)//バトルシーンを初期化する関数
 	UI.Endefeatcnt = 0;					//敵を倒したときの処理のカウントを初期化する
 	Pstates.LvUPBUF_NEW();				//レベルアップの加算値の変数を初期化
 	Pstates.cricnt = 0;					//クリティカル判定のカウントを初期化
+	UI.Itemtag = 0;
+	UI.ICarsolX = 478, UI.ICarsolX2 = 480 + 210 + 2;
+	UI.ICarsolY = 398, UI.ICarsolY2 = 400 + 22;
+	UI.UseItemflg = 0;
 	UI.UIx[0] = UI.SpotUIx;
 	UI.SKILL_MOVE_NEW();
 	Message = ENCOUNT;
@@ -2129,6 +2278,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 {
 	if (title.LOADING_IMAGE(IMAGE_TITLE) == -1) { return FALSE; }
 	if (Bplayer.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == -1) { return FALSE; }
+	Bplayer.x = 250, Bplayer.y = 350;
 	/*if (player.image.LOADING_IMAGE(IMAGE_PLAYER_BATTLE) == FALSE) { return FALSE; }*/
 	if (player.image.LOADING_DIV_IMAGE(DIV_CHARA_TATE, DIV_CHARA_YOKO, MAP_DIV_WIDTH,
 		MAP_DIV_HEIGHT, IMAGE_PLAYER_INMAP) == -1) {
@@ -2139,7 +2289,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	{
 		return FALSE;
 	}
-	if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return FALSE; }
+	if (Estates.battleback.LOADING_IMAGE(IMAGE_BATTLE_BACK) == -1) { return FALSE; }
 	if (UIback.LOADING_IMAGE(IMAGE_UI_BACK) == -1) { return FALSE; }
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_KOUGEKI, 0) == -1) { return FALSE; }
 	if (UI.image.LOADING_IMAGE(IMAGE_UI_SKILL, 1) == -1) { return FALSE; }
@@ -2159,6 +2309,8 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	if (S_UI.back2.LOADING_IMAGE(IMAGE_STATES_BACK2) == -1) { return FALSE; }
 	//イベント画面
 	if (eventS.txtUI.LOADING_IMAGE(IMAGE_EVENT_TXTUIBACK) == -1) { return FALSE; }
+	//ゲームオーバー画面
+	if (over.LOADING_IMAGE(IMAGE_GAME_OVER) == -1) { return FALSE; }
 	return TRUE;
 }
 
@@ -2166,22 +2318,26 @@ VOID RESIZING_VILLAGE_MAP()
 {
 	MAPHIT.RESIZING_HITBOX(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPEN.RESIZING_HITBOX(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPLIGHT.RESIZING_HITBOX(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPUND.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPMID.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPON.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPHIT.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPEN.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPLIGHT.RESIZE(MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 }
 
 VOID RESIZING_FOREST_MAP()
 {
 	MAPHIT.RESIZING_HITBOX(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.RESIZING_HITBOX(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPLIGHT.RESIZING_HITBOX(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPUND.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPMID.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPON.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPHIT.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPLIGHT.RESIZE(MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 }
 
 VOID LOADING_VILLAGE_MAP()
@@ -2209,6 +2365,11 @@ VOID LOADING_VILLAGE_MAP()
 		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	MAPEN.SETTING_HITBOX(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
 		MAP_MURA_TATEMAX,MAP_MURA_YOKOMAX);
+	MAPLIGHT.LOADING_MAP(MAP_MURA_LIGHT_HITBOX);//敵の出現マップ
+	MAPLIGHT.MAPSETTING(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
+	MAPLIGHT.SETTING_HITBOX(divmap.width, divmap.height, MAP_MURA_STx, MAP_MURA_STy,
+		MAP_MURA_TATEMAX, MAP_MURA_YOKOMAX);
 	return;
 }
 
@@ -2236,6 +2397,11 @@ VOID LOADING_FOREST_MAP()
 		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.SETTING_HITBOX(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
 		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPLIGHT.LOADING_MAP(MAP_FOREST_LIGHT_HITBOX);//灯りの出現マップ
+	MAPLIGHT.MAPSETTING(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
+	MAPLIGHT.SETTING_HITBOX(divmap.width, divmap.height, MAP_FOREST_STx, MAP_FOREST_STy,
+		MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX);
 	MAPEN.HitObj = MAP_FOREST_ENEMY_HITOBJ;
 	MAPEN.HitObjBoss = MAP_FOREST_HITOBJ_BOSS;
 	return;
@@ -2248,8 +2414,10 @@ BOOL LOADING_FOREST_COORDINATES()
 	if (MAPON.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
 	if (MAPHIT.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
 	if (MAPEN.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
+	if (MAPLIGHT.LOADING_MAP_COORDINATES(MAP_SAVE_PLACE_X_1, MAP_SAVE_PLACE_Y_1) == FALSE) { return FALSE; }
 	MAPHIT.SETTING_HITBOX_COORDINATES(divmap.width, divmap.height,MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX,MAP_FOREST_MOVE_HITOBJ);
 	MAPEN.SETTING_HITBOX_COORDINATES(divmap.width, divmap.height,MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX,MAP_FOREST_MOVE_HITOBJ);
+	MAPLIGHT.SETTING_HITBOX_COORDINATES(divmap.width, divmap.height, MAP_FOREST_TATEMAX, MAP_FOREST_YOKOMAX, MAP_FOREST_MOVE_HITOBJ);
 	return TRUE;
 }
 
@@ -2272,6 +2440,7 @@ VOID CREATE_FULL_FONT()
 	tanu20n.CREATE_FONT_NONEDGE(20, FONT_TANU_PATH, FONT_TANU_NAME);
 	tanu30.CREATE_FONT(30, FONT_TANU_PATH, FONT_TANU_NAME);
 	tanu30n.CREATE_FONT_NONEDGE(30, FONT_TANU_PATH, FONT_TANU_NAME);
+	tanu80.CREATE_FONT(80, FONT_TANU_PATH, FONT_TANU_NAME);
 	return;
 }
 
@@ -2282,6 +2451,7 @@ BOOL LOADING_FULL_MUSIC()
 	if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC1) == FALSE) { return -1; }
 	if (BEnorAT.se.LOAD_MUSIC(BATTLE_SE_NORMALAT) == FALSE) { return -1; }//通常攻撃のSE
 	//スキル居合の音声読み込み
+	if (Encount.LOAD_MUSIC(PLAY_BATTLE_CHENGE_SE) == FALSE) { return -1; }
 	if (BEIAI.se.LOAD_MUSIC(BATTLE_SE_HOTAL) == FALSE){return -1; }//スキル蛍火のSE
 	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_EN_NORMAL_AT) == FALSE) { return -1; }
 	if (OverBGM.LOAD_MUSIC(END_SCENE_MUSIC_OVER) == FALSE) { return -1; }
@@ -2455,6 +2625,39 @@ VOID DRAW_MESSAGE(int mestype)
 	case SKILL_KEN_WAZA_AT:
 		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
 			"%sの%s!", Pstates.Name, Pstates.KEN.bufName[Pstates.KEN.Viewtag]);
+		return;
+		break;
+	case ITEM_VIEW_NAME://アイテムの名前を表示する
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"アイテムを選択して使用します 選択アイテム:%s", item.Name[UI.Itemtag]);
+		return;
+		break;
+	case ITEM_USE_MES://アイテムの使用を勧告
+		if (UI.UseItemtagPorE == 0)
+		{
+			DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+				"%sに%sを使った！", Pstates.Name, item.Name[UI.Itemtag]);
+		}
+		else
+		{
+			DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+				"%sに%sを投げた！", Estates.Name, item.Name[UI.Itemtag]);
+		}
+		return;
+		break;
+	case ITEM_NOT_USE://アイテムのが使えなかったとき
+			DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+				"効果がありません");
+		return;
+		break;
+	case ITEM_WITCH_USE://アイテムの相手を選ぶ
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"アイテムを使用する相手を選びます");
+		return;
+		break;
+	case ENEMY_ATTACK_NORMAL://アイテムの相手を選ぶ
+		DrawFormatStringToHandle(0, 340, C.White, tanu20.handle,
+			"%sのこうげき！",Estates.Name);
 		return;
 		break;
 	}

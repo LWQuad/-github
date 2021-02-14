@@ -1,45 +1,92 @@
 ﻿  main.cpp
-C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(80,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(81,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(86,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(87,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(58,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(59,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(80,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(81,4): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(131,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(137,20): warning C4305: '初期化中': 'double' から 'float' へ切り詰めます。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(188,13): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(193,14): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(199,14): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(210,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(212,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(216,16): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(242,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(251,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(252,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(266,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(276,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(277,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(289,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(302,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(342,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(364,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(217,18): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(233,13): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(238,14): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(244,14): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(255,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(257,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(261,16): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(287,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(296,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(297,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(311,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(321,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(322,15): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(334,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(347,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(387,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(409,19): warning C4244: '=': 'double' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\enemystatas.hpp(26,64): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\enemystatas.hpp(34,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\enemystatas.hpp(60,66): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\Item.hpp(79,29): warning C4244: '引数': 'int' から '_Ty' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
+C:\作品Ⅲgithub\Works3DxLib\Item.hpp(82,28): warning C4244: '引数': 'int' から '_Ty' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
 C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(10,12): warning C4244: '初期化中': 'double' から 'int' への変換です。データが失われる可能性があります。
 C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(10,41): warning C4244: '初期化中': 'double' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(61,29): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(67,31): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(72,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(78,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(914,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(915,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1145,51): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1851,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1852,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2017,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2018,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2421,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2426,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2431,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2436,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2267): warning C4715: 'LOADING_DATA_SLOT': 値を返さないコントロール パスがあります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2337): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(56,29): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(61,31): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(66,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(68,35): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(73,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(75,35): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(80,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(82,35): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(87,35): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(110,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(115,31): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(117,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(122,31): warning C4244: '+=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(124,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(129,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(131,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(918,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(919,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1132,51): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1136,53): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1707,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1706,119): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1734,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1733,116): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+          with
+          [
+              _Ty=float
+          ]
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1977,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1978,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2152,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2153,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2591,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2596,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2601,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2606,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2435): warning C4715: 'LOADING_DATA_SLOT': 値を返さないコントロール パスがあります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2507): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe

@@ -54,12 +54,19 @@ public:
 	int Iaiskillx = 480, Iaiskilly = 435, Iaiskillx2 = 940, Iaiskilly2 = 460;
 	//バトルスキルの要素を収容する変数
 	MUSIC skillSE;
-
+	//アイテム関連
 	int ItemPosX = 480, ItemPosY = 400;
 	int ICarsolX = ItemPosX - 2, ICarsolY = ItemPosY - 2, ICarsolX2 = ItemPosX + 210+2, ICarsolY2 = ItemPosY + 22;
 	int ItemBrend = 200;
 	BOOL ItemBrendflg = TRUE;
 	int Itemtag = 0;
+	int UseItemflg = 0;
+	int CharaCarsolX = 250, CharaCarsolY = 350, 
+		CharaCarsolX2 = CharaCarsolX+240 , CharaCarsolY2 = CharaCarsolY+240;
+	int UseItemtagPorE = 0;
+	int UseorNot = 0;
+
+	int EnemyNATflg = 0;
 
 	BOOL EncntUIisView = TRUE;
 	BOOL CHANGE_COUNT();

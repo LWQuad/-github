@@ -8,6 +8,8 @@
 #define BATTLE_SE_NORMALAT TEXT(".\\MUSIC\\SE\\sword.mp3")
 #define TITLE_SCENE_MUSIC TEXT(".\\MUSIC\\春沙雨.mp3")
 
+#define PLAY_BATTLE_CHENGE_SE TEXT(".\\MUSIC\\尺八.mp3")
+
 #define BATTLE_SE_EN_NORMAL_AT TEXT(".\\MUSIC\\SE\\punch-middle2.mp3")
 #define BATTLE_SE_CARSOL TEXT(".\\MUSIC\\SE\\カーソル移動1.mp3")
 #define BATTLE_SE_ENTER TEXT(".\\MUSIC\\SE\\和太鼓でドン.mp3")

@@ -10,15 +10,18 @@ using namespace std;
 #define ITEMNUM 10
 #define ITEM_FILE_PATH TEXT(".\\ITEM\\Item.csv")
 
+
+
 class ITEM
 {
 public:
 	LOAD_DIV_IMAGE image;
-	vector<int> healHP,healMP,tag,buy,sell,have;
-	char Name[ITEMNUM][30], Expl[ITEMNUM][200],Expl2[ITEMNUM][5][160], badStatus[ITEMNUM][30], goodStatus[ITEMNUM][30];
+	vector<int> healHP, healMP, tag, buy, sell, have;
+	vector<float> goodhosei, badhosei;
+	char Name[ITEMNUM][30], Expl[ITEMNUM][5][160], badStatus[ITEMNUM][30], goodStatus[ITEMNUM][30];
 	BOOL INPUTITEM_HEAL(const char*);
 	VOID GET_ITEM(int);
-
+	
 	//アイテムの情報を読み込む関数
 };
 
@@ -41,13 +44,12 @@ BOOL ITEM::INPUTITEM_HEAL(const char* itempath)//マップデータを読み込む関数(マッ
 				strcpy_s(Name[line], tmp.c_str());
 				break;
 			case 1://説明を読み込む
-				while (getline(explstream, expltmp, 'n'))
+				while (getline(explstream, expltmp, '@'))
 				{
-					strcpy_s(Expl2[line][i], expltmp.c_str());
+					strcpy_s(Expl[line][i], expltmp.c_str());
 					i++;
 				}
 				i = 0;
-				strcpy_s(Expl[line], tmp.c_str());
 				break;
 			case 2://タグを読み込む
 				tag.push_back(atoi(tmp.c_str()));
@@ -72,6 +74,12 @@ BOOL ITEM::INPUTITEM_HEAL(const char* itempath)//マップデータを読み込む関数(マッ
 				break;
 			case 9://所持数
 				have.push_back(atoi(tmp.c_str()));
+				break;
+			case 10://バフ補正
+				goodhosei.push_back(atoi(tmp.c_str()));
+				break;
+			case 11://デバフ補正
+				badhosei.push_back(atoi(tmp.c_str()));
 				break;
 			}
 			colunm++;
