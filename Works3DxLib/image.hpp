@@ -49,7 +49,8 @@ using namespace std;
 #define IMAGE_EVENT_TXTUIBACK TEXT(".\\IMAGEs\\EVENT\\frame_message.png")
 //ゲームオーバー画面
 #define IMAGE_GAME_OVER	TEXT(".\\IMAGEs\\ゲームオーバー画面.png")
-//バトルエフェクト
+#define IMAGE_GAME_CLEAR TEXT(".\\IMAGEs\\ゲームクリア画面.jpg")
+//バトルエフェクト")
 #define IMAGE_BATTLE_EFFECT_NORMAL_AT TEXT(".\\IMAGEs\\640×480\\btleffectNormal.png")
 #define IMAGE_BE_SKILL_IAI_MUTUKI TEXT(".\\IMAGEs\\640×480\\btleffectIAI_mutuki.png")
 

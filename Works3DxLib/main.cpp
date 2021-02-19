@@ -82,7 +82,7 @@ BOOL LOADING_DATA_SLOT(int); //セーブスロットからデータをロードする
 
 PlayerStates Pstates;
 EnemyStates Estates;
-LOAD_SINGLE_IMAGE title, over;
+LOAD_SINGLE_IMAGE title, over, clear;
 LOAD_SINGLE_IMAGE titlelogo;
 LOAD_SINGLE_IMAGE Bplayer;
 LOAD_SINGLE_IMAGE enemy;
@@ -108,7 +108,7 @@ MUSIC BTBGM1;
 MUSIC BTSEnor;
 MUSIC BTSEENnor;
 MUSIC BTcar, BTenter;
-MUSIC OverBGM;
+MUSIC OverBGM, ClearBGM;
 MUSIC TitleBGM;
 CHANGE_TIME ChangeT;
 KEYINPUT KEY;
@@ -137,6 +137,9 @@ int cateprocess = 0;
 
 int TATE_MAX = 0;
 int YOKO_MAX = 0;
+
+BOOL GAME_END_CLEAR;
+BOOL LAST_BOSS=FALSE;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -917,6 +920,7 @@ VOID MY_PLAY_PROC()
 			PlaySoundMem(Encount.handle, DX_PLAYTYPE_BACK);
 			if (BTBGM1.LOAD_MUSIC(BATTLE_SCENE_MUSIC_BOSS) == FALSE);
 			if (btbk.LOADING_IMAGE(IMAGE_BATTLE_BACK_NUMA) == FALSE);
+			LAST_BOSS = TRUE;
 			Estates.ENEMY_BOSS_FLAG();
 			INPUTBTLSTATES_BUF();
 			UI.BrightR = UI.BrightMAX, UI.BrightG = UI.BrightMAX, UI.BrightB = UI.BrightMAX;
@@ -1810,7 +1814,14 @@ VOID MY_BATTLE_PROC()
 						{
 							StopSoundMem(BTBGM1.handle);	//BGMを止める
 						}
-						GameScene = GAME_PLAY_SCENE;
+						if (LAST_BOSS == TRUE)
+						{
+							GAME_END_CLEAR = TRUE;
+							GameScene = GAME_END_SCENE;
+						}
+						else {
+							GameScene = GAME_PLAY_SCENE;
+						}
 					}
 				}
 				break;
@@ -1920,6 +1931,7 @@ VOID MY_BATTLE_PROC()
 						{
 							StopSoundMem(BTBGM1.handle);	//BGMを止める
 						}
+						GAME_END_CLEAR = FALSE;
 						GameScene = GAME_END_SCENE;
 					};
 					BEnorAT.Count = 0;
@@ -2195,10 +2207,21 @@ VOID MY_END()
 
 VOID MY_END_PROC()
 {
-	if (CheckSoundMem(OverBGM.handle) == 0)
+	if (GAME_END_CLEAR == FALSE)
 	{
-		ChangeVolumeSoundMem(255 * 50 / 100, OverBGM.handle);	//50%の音量にする
-		PlaySoundMem(OverBGM.handle, DX_PLAYTYPE_LOOP);
+		if (CheckSoundMem(OverBGM.handle) == 0)
+		{
+			ChangeVolumeSoundMem(255 * 50 / 100, OverBGM.handle);	//50%の音量にする
+			PlaySoundMem(OverBGM.handle, DX_PLAYTYPE_LOOP);
+		}
+	}
+	if (GAME_END_CLEAR == TRUE)
+	{
+		if (CheckSoundMem(ClearBGM.handle) == 0)
+		{
+			ChangeVolumeSoundMem(255 * 50 / 100, ClearBGM.handle);	//50%の音量にする
+			PlaySoundMem(ClearBGM.handle, DX_PLAYTYPE_LOOP);
+		}
 	}
 	if (KEY.KEYINPUT_ALLACTION(KEY_INPUT_ESCAPE) == 0)
 	{
@@ -2212,9 +2235,18 @@ VOID MY_END_PROC()
 }
 VOID MY_END_DRAW()
 {
-	DrawGraph(0, 0, over.handle, TRUE);
-	int Font = GetDrawStringWidthToHandle("GAME OVER", 9, tanu80.handle);
-	DrawStringToHandle(GAME_WIDTH/2-Font/2, GAME_HEIGHT/2-40, "GAME OVER", C.Red, tanu80.handle);
+	if (GAME_END_CLEAR == FALSE)
+	{
+		DrawGraph(0, 0, over.handle, TRUE);
+		int Font = GetDrawStringWidthToHandle("GAME OVER", 9, tanu80.handle);
+		DrawStringToHandle(GAME_WIDTH / 2 - Font / 2, GAME_HEIGHT / 2 - 40, "GAME OVER", C.Red, tanu80.handle);
+	}
+	if (GAME_END_CLEAR == TRUE)
+	{
+		DrawGraph(0, 0, clear.handle, TRUE);
+		int Font = GetDrawStringWidthToHandle("GAME CLEAR", 9, tanu80.handle);
+		DrawStringToHandle(GAME_WIDTH / 2 - Font / 2, GAME_HEIGHT / 2 - 40, "GAME CLEAR", GetColor(0,0,255), tanu80.handle);
+	}
 	return;
 }
 
@@ -2311,6 +2343,7 @@ BOOL LOADING_FULL_IMAGE(VOID)//画像全てをロードする関数
 	if (eventS.txtUI.LOADING_IMAGE(IMAGE_EVENT_TXTUIBACK) == -1) { return FALSE; }
 	//ゲームオーバー画面
 	if (over.LOADING_IMAGE(IMAGE_GAME_OVER) == -1) { return FALSE; }
+	if (clear.LOADING_IMAGE(IMAGE_GAME_CLEAR) == -1) { return FALSE; }
 	return TRUE;
 }
 
@@ -2455,6 +2488,7 @@ BOOL LOADING_FULL_MUSIC()
 	if (BEIAI.se.LOAD_MUSIC(BATTLE_SE_HOTAL) == FALSE){return -1; }//スキル蛍火のSE
 	if (BTSEENnor.LOAD_MUSIC(BATTLE_SE_EN_NORMAL_AT) == FALSE) { return -1; }
 	if (OverBGM.LOAD_MUSIC(END_SCENE_MUSIC_OVER) == FALSE) { return -1; }
+	if (ClearBGM.LOAD_MUSIC(END_SCENE_MUSIC_CLEAR) == FALSE) { return -1; }
 	if (BTcar.LOAD_MUSIC(BATTLE_SE_CARSOL) == FALSE) { return -1; }
 	if (BTenter.LOAD_MUSIC(BATTLE_SE_ENTER) == FALSE) { return -1; }
 	return TRUE;

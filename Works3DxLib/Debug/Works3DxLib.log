@@ -1,4 +1,8 @@
-﻿  main.cpp
+﻿  event.cpp
+  image.cpp
+C:\作品Ⅲgithub\Works3DxLib\image.cpp(8,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\image.cpp(24,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  main.cpp
 C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(86,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\BATTLEEFFECT.hpp(87,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\作品Ⅲgithub\Works3DxLib\playerstatus.hpp(58,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
@@ -55,38 +59,40 @@ C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(122,31): warning C4244: '+=': 'd
 C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(124,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
 C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(129,31): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
 C:\作品Ⅲgithub\Works3DxLib\ChangingTime.hpp(131,35): warning C4244: '-=': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(918,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(919,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1132,51): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1136,53): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1707,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(921,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(922,60): warning C4390: ';': 制御が空の文が見つかりました。意図した記述でしょうか?
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1136,51): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1140,53): warning C4244: '引数': 'float' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1711,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
           with
           [
               _Ty=float
           ]
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1706,119): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1710,119): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
           with
           [
               _Ty=float
           ]
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1734,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1738,34): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
           with
           [
               _Ty=float
           ]
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1733,116): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1737,116): warning C4244: '引数': '_Ty' から 'int' への変換です。データが失われる可能性があります。
           with
           [
               _Ty=float
           ]
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1977,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(1978,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2152,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2153,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2591,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2596,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2601,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2606,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2435): warning C4715: 'LOADING_DATA_SLOT': 値を返さないコントロール パスがあります。
-C:\作品Ⅲgithub\Works3DxLib\main.cpp(2507): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1989,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(1990,11): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2164,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2165,12): warning C4244: '初期化中': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2625,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2630,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2635,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2640,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  music.cpp
+  コードを生成中...
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2468): warning C4715: 'LOADING_DATA_SLOT': 値を返さないコントロール パスがあります。
+C:\作品Ⅲgithub\Works3DxLib\main.cpp(2541): warning C4715: 'LOADING_SKILL_IMGandSE': 値を返さないコントロール パスがあります。
   Works3DxLib.vcxproj -> C:\作品Ⅲgithub\Works3DxLib\Debug\Works3DxLib.exe

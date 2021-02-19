@@ -5,6 +5,7 @@
 #define BATTLE_SCENE_MUSIC1 TEXT(".\\MUSIC\\çáêÌÇÃéû.mp3")
 #define BATTLE_SCENE_MUSIC_BOSS TEXT(".\\MUSIC\\óHà√ÇΩÇøÇÃã}èP.mp3")
 #define END_SCENE_MUSIC_OVER TEXT(".\\MUSIC\\GAME_OVER.mp3")
+#define END_SCENE_MUSIC_CLEAR TEXT(".\\MUSIC\\Water_blue.mp3")
 #define BATTLE_SE_NORMALAT TEXT(".\\MUSIC\\SE\\sword.mp3")
 #define TITLE_SCENE_MUSIC TEXT(".\\MUSIC\\ètçπâJ.mp3")
 
